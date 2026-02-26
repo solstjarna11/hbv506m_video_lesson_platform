@@ -20,11 +20,7 @@ function createUser({ email, password_hash, display_name}) {
         VALUES (?, ?, ?)
     `).run(normalizedEmail, password_hash, display_name || null)
     
-    return {
-        id: result.lastInsertRowid, // better-sqlite3 uses lastInsertRowid instead of lastID.
-        display_name,
-        role: 'user'
-    };
+    return getUserById(result.lastInsertRowid);
 }
 
 function updatePassword(id, password_hash) {
