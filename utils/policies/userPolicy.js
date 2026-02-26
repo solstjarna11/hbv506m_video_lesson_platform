@@ -8,15 +8,15 @@ module.exports = {
     
     // NOTICE: can guests view profiles? should there 
     // be limited information a guest can see on a profile?
-    canView(user, course) {
+    canView(user, targetUser) {
         // TODO
     },
 
-    canEdit(user, course) {
+    canEdit(user, targetUser) {
         // TODO
     },
 
-    canDelete(user, course) {
+    canDelete(user, targetUser) {
         // TODO
     },
 }
