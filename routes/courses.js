@@ -17,6 +17,7 @@ const auditLogsRepo = require('../db/auditLogsRepo');
 const { safeAuditLog } = require('../utils/auditLogger');
 
 const coursePolicy = require('../utils/policies/coursePolicy');
+const lessonPolicy = require('../utils/policies/lessonPolicy');
 
 // GET /courses - list courses
 router.get('/', function (req, res, next) {
@@ -86,9 +87,11 @@ router.get('/:id',
     const includeUnpublished = coursePolicy.canEdit(req.user, course); // owner/admin can see unpublished.
     const lessons = lessonsRepo.getLessonsByCourseId(course.id, { includeUnpublished }); 
 
-    const canPublish = coursePolicy.canPublish(req.user, course); 
+    const canEditCourse = coursePolicy.canEdit(req.user, course);
+    const canPublishCourse = coursePolicy.canPublish(req.user, course);
+    const canCreateLesson = canEditCourse || lessonPolicy.canCreate(req.user, course)
     
-    res.render('courses/show', { course, lessons, canPublish });
+    res.render('courses/show', { course, lessons, canEditCourse, canPublishCourse, canCreateLesson });
 
   } catch (err) {
     next(err);

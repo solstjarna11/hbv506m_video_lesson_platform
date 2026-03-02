@@ -12,7 +12,7 @@
     </div>
 
     <div class="header-actions">
-      <% if (typeof canPublish !== 'undefined' && canPublish) { %>
+      <% if (typeof canPublishCourse !== 'undefined' && canPublishCourse) { %>
         <form method="POST"
               action="/courses/<%= course.id %>/publish-toggle"
               class="inline-form">
@@ -22,8 +22,13 @@
         </form>
       <% } %>
 
-      <a class="btn" href="/lessons/new?course_id=<%= course.id %>">+ New Lesson</a>
-      <a class="btn-secondary" href="/courses/<%= course.id %>/edit">Edit Course</a>
+      <% if (canEditCourse) { %>
+        <a class="btn-secondary" href="/courses/<%= course.id %>/edit">Edit Course</a>
+      <% } %>
+
+      <% if (canCreateLesson) { %>
+        <a class="btn" href="/lessons/new?course_id=<%= course.id %>">+ New Lesson</a>
+      <% } %>
     </div>
   </header>
 
@@ -53,12 +58,15 @@
 
           <div class="card-actions">
             <a class="btn-secondary" href="/lessons/<%= lesson.id %>">View</a>
-            <a class="btn-secondary" href="/lessons/<%= lesson.id %>/edit">Edit</a>
 
-            <form method="POST" action="/lessons/<%= lesson.id %>/delete" class="inline-form"
-                  onsubmit="return confirm('Delete this lesson?');">
-              <button class="btn-danger" type="submit">Delete</button>
-            </form>
+            <% if (canEditCourse) { %>
+              <a class="btn-secondary" href="/lessons/<%= lesson.id %>/edit">Edit</a>
+
+              <form method="POST" action="/lessons/<%= lesson.id %>/delete" class="inline-form"
+                    onsubmit="return confirm('Delete this lesson?');">
+                <button class="btn-danger" type="submit">Delete</button>
+              </form>
+            <% } %>
           </div>
         </li>
       <% }) %>
