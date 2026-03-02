@@ -15,6 +15,9 @@ let coursesRouter = require('./routes/courses');
 let lessonsRouter = require('./routes/lessons');
 let adminRouter = require('./routes/admin');
 
+const usersRepo = require('./db/usersRepo'); // for session hydration
+
+
 const requireAuth = require('./utils//middleware/requireAuth');
 let expressLayouts = require('express-ejs-layouts');
 
@@ -76,19 +79,48 @@ function createApp({ sessionStore } = {}) {
 
   app.use(session(sessionOptions));
 
+  // --------------------------
+  // User session hydration middleware
+  // Must be after session middleware and before any route that needs req.user
+  // --------------------------
+  // On each request, if there's a userId in the session, 
+  // we fetch the latest user data from the DB and attach it to req.user 
+  // and res.locals.user for use in routes and views.
+  // -------------------------- 
   app.use((req, res, next) => {
-    res.locals.user = req.session.user;
-    next();
+    const userId = req.session?.userId; 
+
+    if (!userId) {
+      req.user = null;
+      res.locals.user = null;
+      return next();
+    }
+
+    const user = usersRepo.getUserById(userId);
+
+    // user deleted or disabled -> kill session
+    if (!user || user.is_active !== 1) {
+      req.session.destroy(() => {});
+      req.user = null;
+      res.locals.user = null;
+      return res.redirect('/auth/login');
+    }
+
+    req.user = user;        // DB-fresh user row
+    res.locals.user = user; // views
+    return next();
   });
 
   // --------------------------
   // Routes
   // --------------------------
+  // Public routes
   app.use('/', indexRouter);
-  app.use('/users', usersRouter);
   app.use('/auth', authRouter);
-
-  app.use('/courses', coursesRouter);
+  
+  // All routes below require authentication, enforced by requireAuth middleware
+  app.use('/users', requireAuth, usersRouter);
+  app.use('/courses', requireAuth, coursesRouter);
   app.use('/lessons', requireAuth, lessonsRouter);
   app.use('/admin', requireAuth, adminRouter);
 
