@@ -16,6 +16,7 @@
         <form method="POST"
               action="/courses/<%= course.id %>/publish-toggle"
               class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button class="<%= course.is_published ? 'btn-danger' : 'btn' %>" type="submit">
             <%= course.is_published ? 'Unpublish' : 'Publish' %>
           </button>
@@ -33,6 +34,7 @@
 
     <% if (canEnroll) { %>
       <form method="POST" action="/courses/<%= course.id %>/enroll" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn" type="submit">Enroll</button>
       </form>
     <% } %>
@@ -40,6 +42,7 @@
     <% if (canUnenroll) { %>
       <form method="POST" action="/courses/<%= course.id %>/unenroll" class="inline-form"
             onsubmit="return confirm('Unenroll from this course?');">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn-danger" type="submit">Unenroll</button>
       </form>
     <% } %>
@@ -77,6 +80,7 @@
 
               <form method="POST" action="/lessons/<%= lesson.id %>/delete" class="inline-form"
                     onsubmit="return confirm('Delete this lesson?');">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="btn-danger" type="submit">Delete</button>
               </form>
             <% } %>

@@ -9,6 +9,7 @@
   <% } %>
 
   <form class="form" method="POST" action="/courses">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label class="label">
       Title
       <input class="input" type="text" name="title" value="<%= form.title %>" required>

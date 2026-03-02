@@ -10,6 +10,7 @@
         <h3>Role: <b><%= user.role %></b></h3>
 
         <form action="/auth/logout" method="POST" style="display:inline;">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="header-nav-btn">Logout</button>
         </form>
       <% } else { %>

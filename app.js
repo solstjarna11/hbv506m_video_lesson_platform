@@ -7,6 +7,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const fs = require('fs');
 const session = require('express-session');
+const csurf = require('csurf'); // anti csrf middleware
+
 
 let indexRouter = require('./routes/index');
 let usersRouter = require('./routes/users');
@@ -80,6 +82,10 @@ function createApp({ sessionStore } = {}) {
 
   app.use(session(sessionOptions));
 
+  // anti csrf middlware
+  const csrfProtection = csurf();
+  app.use(csrfProtection);
+
   // --------------------------
   // User session hydration middleware
   // Must be after session middleware and before any route that needs req.user
@@ -115,6 +121,12 @@ function createApp({ sessionStore } = {}) {
     return next();
   });
 
+
+  app.use((req, res, next) => {
+    res.locals.csrfToken = req.csrfToken();
+    next();
+  });
+
   // --------------------------
   // Routes
   // --------------------------
@@ -128,8 +140,17 @@ function createApp({ sessionStore } = {}) {
   app.use('/lessons', requireAuth, lessonsRouter);
   app.use('/admin', requireAuth, adminRouter);
 
+
   app.use(function (req, res, next) {
     next(createError(404));
+  });
+
+  // CSRF error handler
+  app.use((err, req, res, next) => {
+    if (err.code === 'EBADCSRFTOKEN') {
+      return res.status(403).send('Invalid CSRF token');
+    }
+    next(err);
   });
 
   app.use(function (err, req, res, next) {

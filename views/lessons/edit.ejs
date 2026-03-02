@@ -19,6 +19,7 @@
 
   <!-- Update form (inputs only) -->
   <form id="lesson-edit-form" class="form" method="POST" action="/lessons/<%= lesson.id %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label class="label">
       Title
       <input class="input" type="text" name="title" value="<%= form.title %>" required>
@@ -56,6 +57,7 @@
 
     <form method="POST" action="/lessons/<%= lesson.id %>/delete" class="inline-form"
           onsubmit="return confirm('Delete this lesson?');">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn-danger" type="submit">Delete</button>
     </form>
   </div>

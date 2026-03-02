@@ -12,6 +12,7 @@
     <% } %>
 
     <form action="/auth/register" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="form-group">
         <label for="display_name">Name</label>
         <input
