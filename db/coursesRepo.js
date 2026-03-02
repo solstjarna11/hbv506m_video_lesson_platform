@@ -25,12 +25,14 @@ function setPublished(id, is_published) {
   return stmt.run(is_published ? 1 : 0, id).changes;
 }
 
-function createCourse({ title, description, created_by_user_id }) {
+function createCourse({ title, description, is_published = 0, price_cents = 0, created_by_user_id = null }) {
+  console.log('createCourse SQL about to run');
   const stmt = db.prepare(`
-    INSERT INTO courses (title, description, created_by_user_id)
-    VALUES (?, ?, ?)
+    INSERT INTO courses (title, description, is_published, price_cents, created_by_user_id)
+    VALUES (?, ?, ?, ?, ?)
   `);
-  const result = stmt.run(title, description, created_by_user_id ?? null);
+
+  const result = stmt.run(title, description, is_published, price_cents, created_by_user_id);
   return result.lastInsertRowid;
 }
 

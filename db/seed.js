@@ -36,6 +36,8 @@ if (!course1Id) {
   course1Id = coursesRepo.createCourse({
     title: 'Introduction to Web Security',
     description: 'Learn the basics of web application security and common vulnerabilities.',
+    is_published: 1,
+    created_by_user_id: adminUser.id,
   });
 }
 
@@ -47,6 +49,8 @@ if (!course2Id) {
   course2Id = coursesRepo.createCourse({
     title: 'Secure Backend Development',
     description: 'Building secure Node.js and Express applications.',
+    is_published: 1,
+    created_by_user_id: adminUser.id,
   });
 }
 
