@@ -7,6 +7,8 @@ module.exports = {
   COURSE_EDIT: 'course:edit',
   COURSE_DELETE: 'course:delete',
   COURSE_PUBLISH: 'course:publish',
+  COURSE_ENROLL: 'course:enroll',
+  COURSE_UNENROLL: 'course:unenroll',
 
   // lessons
   LESSON_VIEW: 'lesson:view',

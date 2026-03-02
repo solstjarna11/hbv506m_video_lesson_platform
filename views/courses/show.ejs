@@ -30,6 +30,19 @@
         <a class="btn" href="/lessons/new?course_id=<%= course.id %>">+ New Lesson</a>
       <% } %>
     </div>
+
+    <% if (canEnroll) { %>
+      <form method="POST" action="/courses/<%= course.id %>/enroll" class="inline-form">
+        <button class="btn" type="submit">Enroll</button>
+      </form>
+    <% } %>
+
+    <% if (canUnenroll) { %>
+      <form method="POST" action="/courses/<%= course.id %>/unenroll" class="inline-form"
+            onsubmit="return confirm('Unenroll from this course?');">
+        <button class="btn-danger" type="submit">Unenroll</button>
+      </form>
+    <% } %>
   </header>
 
   <h2>Lessons</h2>

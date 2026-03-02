@@ -51,6 +51,19 @@ function authorize(ability) {
         allowed = coursePolicy.canPublish(user, course);
         break;
 
+      case ABILITIES.COURSE_ENROLL: {
+        if (!course) return forbidden(res);
+        // enrollment is optional; if loader ran it will be there
+        allowed = coursePolicy.canEnroll(user, course, enrollment);
+        break;
+      }
+
+      case ABILITIES.COURSE_UNENROLL: {
+        if (!enrollment) return forbidden(res);
+        allowed = coursePolicy.canUnenroll(user, enrollment);
+        break;
+      }
+
       // Lessons (these likely need course + enrollment)
       case ABILITIES.LESSON_VIEW:
         if (!course || !lesson) return forbidden(res);

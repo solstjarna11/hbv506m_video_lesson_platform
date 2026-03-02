@@ -6,12 +6,14 @@ var router = express.Router();
 // Authorization
 const { authorize } = require('../utils/authz/authorize');
 const { loadCourse } = require('../utils/authz/loaders');
+const { loadEnrollmentFromCourse } = require('../utils/authz/loaders');
 const ABILITIES = require('../utils/authz/abilities');
 
 // Repositories
 const coursesRepo = require('../db/coursesRepo');
 const lessonsRepo = require('../db/lessonsRepo');
 const auditLogsRepo = require('../db/auditLogsRepo');
+const enrollmentsRepo = require('../db/enrollmentsRepo');
 
 // Utils
 const { safeAuditLog } = require('../utils/auditLogger');
@@ -77,21 +79,25 @@ router.get('/:id/edit',
 // Must be after /new route!
 router.get('/:id', 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
+  loadEnrollmentFromCourse(),
   authorize(ABILITIES.COURSE_VIEW), // only users with course:view on this course can access  
   function (req, res, next) {
   try {
     res.locals.pageCss = '/stylesheets/pages/courses.css';
 
     const course = req.resource.course; // no need to fetch again from db, loader already did that
+    const enrollment = req.resource.enrollment;
 
     const includeUnpublished = coursePolicy.canEdit(req.user, course); // owner/admin can see unpublished.
     const lessons = lessonsRepo.getLessonsByCourseId(course.id, { includeUnpublished }); 
 
+    const canEnroll = coursePolicy.canEnroll(req.user, course, enrollment);
+    const canUnenroll = !!enrollment && coursePolicy.canUnenroll(req.user, enrollment);
     const canEditCourse = coursePolicy.canEdit(req.user, course);
     const canPublishCourse = coursePolicy.canPublish(req.user, course);
     const canCreateLesson = canEditCourse || lessonPolicy.canCreate(req.user, course)
     
-    res.render('courses/show', { course, lessons, canEditCourse, canPublishCourse, canCreateLesson });
+    res.render('courses/show', { course, lessons, enrollment, canEnroll, canUnenroll, canEditCourse, canPublishCourse, canCreateLesson });
 
   } catch (err) {
     next(err);
@@ -225,5 +231,57 @@ router.post('/:id/delete',
     next(err);
   }
 });
+
+
+
+// POST /courses/:id/enroll
+router.post(
+  '/:id/enroll',
+  loadCourse('id'),
+  loadEnrollmentFromCourse(),
+  authorize(ABILITIES.COURSE_ENROLL),
+  (req, res, next) => {
+    try {
+      enrollmentsRepo.enrollUserInCourse(req.user.id, req.resource.course.id);
+
+      safeAuditLog(req, {
+        event_type: 'course_enrolled',
+        severity: 'info',
+        actor_user_id: req.user.id,
+        message: `User enrolled in course: ${req.resource.course.title}`,
+        metadata: { course_id: req.resource.course.id },
+      });
+
+      res.redirect(`/courses/${req.resource.course.id}`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /courses/:id/unenroll
+router.post(
+  '/:id/unenroll',
+  loadCourse('id'),
+  loadEnrollmentFromCourse(),
+  authorize(ABILITIES.COURSE_UNENROLL),
+  (req, res, next) => {
+    try {
+      enrollmentsRepo.cancelEnrollment(req.user.id, req.resource.course.id);
+
+      safeAuditLog(req, {
+        event_type: 'course_unenrolled',
+        severity: 'info',
+        actor_user_id: req.user.id,
+        message: `User unenrolled from course: ${req.resource.course.title}`,
+        metadata: { course_id: req.resource.course.id },
+      });
+
+      res.redirect(`/courses/${req.resource.course.id}`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 module.exports = router;
