@@ -40,13 +40,14 @@ module.exports = {
         if (!user.is_active) return false
         if (user.role === 'admin') return false // NOTICE: Maybe change
         if (!course.is_published) return false
-        if (existingEnrollment) return false
-        return user.role === 'student' || user.role === 'instructor'
+        if (existingEnrollment?.status === 'active') return false
+        return (user.role === 'student' || user.role === 'instructor')
     },
 
     canUnenroll(user, enrollment) {
         if (!user) return false
         if (!user.is_active) return false
+        if (!enrollment || enrollment.status !== 'active') return false
         if (user.role === 'admin') return true
         return enrollment.user_id === user.id
     },

@@ -4,10 +4,14 @@
 const db = require("./index");
 
 function enrollUserInCourse(userId, courseId) {
-  // Idempotent: if already enrolled, UNIQUE(user_id, course_id) will prevent duplicates.
+  // Idempotent: if already enrollment remains active; cancelled enrollment is reactivated.
   const stmt = db.prepare(`
-    INSERT OR IGNORE INTO enrollments (user_id, course_id, status)
+    INSERT INTO enrollments (user_id, course_id, status)
     VALUES (?, ?, 'active')
+    ON CONFLICT(user_id, course_id) DO UPDATE SET
+      status = 'active',
+      cancelled_at = NULL,
+      enrolled_at = datetime('now')
   `);
 
   return stmt.run(userId, courseId).changes; // 1 if inserted, 0 if already existed
@@ -18,7 +22,7 @@ function cancelEnrollment(userId, courseId) {
     UPDATE enrollments
     SET status = 'cancelled',
         cancelled_at = datetime('now')
-    WHERE user_id = ? AND course_id = ?
+    WHERE user_id = ? AND course_id = ? AND status = 'active'
   `);
 
   return stmt.run(userId, courseId).changes;
