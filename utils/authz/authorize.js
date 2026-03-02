@@ -1,5 +1,6 @@
 // utils/authz/authorize.js
 
+const adminPolicy = require('../policies/adminPolicy');
 const coursePolicy = require('../policies/coursePolicy');
 const lessonPolicy = require('../policies/lessonPolicy');
 
@@ -26,6 +27,10 @@ function authorize(ability) {
     let allowed = false;
 
     switch (ability) {
+      // Admin
+      case ABILITIES.ADMIN_PANEL:
+        allowed = adminPolicy.canAccess(user);
+        break;
       // Courses
       case ABILITIES.COURSE_VIEW:
         if (!course) return forbidden(res);

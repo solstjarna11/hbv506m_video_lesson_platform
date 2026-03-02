@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 
 const auditLogsRepo = require('../db/auditLogsRepo');
+const { authorize } = require('../utils/authz/authorize');
+const ABILITIES = require('../utils/authz/abilities');
 
 function tailFile(filePath, maxLines = 100) {
   if (!fs.existsSync(filePath)) return null;
@@ -15,7 +17,9 @@ function tailFile(filePath, maxLines = 100) {
 }
 
 // GET /admin/monitor - monitoring page (no auth required yet)
-router.get('/monitor', function (req, res, next) {
+router.get('/monitor', 
+  authorize(ABILITIES.ADMIN_PANEL),
+  function (req, res, next) {
   res.locals.pageCss = '/stylesheets/pages/admin.css';
 
   // Latest audit logs from DB

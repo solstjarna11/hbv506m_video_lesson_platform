@@ -17,6 +17,7 @@ let adminRouter = require('./routes/admin');
 
 const usersRepo = require('./db/usersRepo'); // for session hydration
 
+const adminPolicy = require('./utils/policies/adminPolicy');
 
 const requireAuth = require('./utils//middleware/requireAuth');
 let expressLayouts = require('express-ejs-layouts');
@@ -93,6 +94,7 @@ function createApp({ sessionStore } = {}) {
     if (!userId) {
       req.user = null;
       res.locals.user = null;
+      res.locals.canAdmin = false;
       return next();
     }
 
@@ -103,11 +105,13 @@ function createApp({ sessionStore } = {}) {
       req.session.destroy(() => {});
       req.user = null;
       res.locals.user = null;
+      res.locals.canAdmin = false;
       return res.redirect('/auth/login');
     }
 
     req.user = user;        // DB-fresh user row
     res.locals.user = user; // views
+    res.locals.canAdmin = adminPolicy.canAccess(user); // centralized admin capability flag
     return next();
   });
 

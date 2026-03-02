@@ -28,7 +28,7 @@
       <a class="btn primary" href="/courses">Browse Courses</a>
 
       <!-- TEMP: admin monitoring link (enforce roles later) -->
-      <% if (user) { %>
+      <% if (canAdmin) { %>
         <a class="btn secondary" href="/admin/monitor">Admin Dashboard</a>
       <% } %>
     </section>
