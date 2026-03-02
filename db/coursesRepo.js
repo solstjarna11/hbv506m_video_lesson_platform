@@ -27,7 +27,7 @@ function setPublished(id, is_published) {
 
 function createCourse({ title, description, created_by_user_id }) {
   const stmt = db.prepare(`
-    INSERT INTO courses (title, description, created _by_user_id)
+    INSERT INTO courses (title, description, created_by_user_id)
     VALUES (?, ?, ?)
   `);
   const result = stmt.run(title, description, created_by_user_id ?? null);
