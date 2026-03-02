@@ -32,7 +32,7 @@
           </thead>
           <tbody>
             <% latestLogs.forEach(log => { %>
-              <tr>
+              <tr class="log-row" data-metadata='<%= log.metadata_json || "{}" %>'>
                 <td><%= log.created_at %></td>
                 <td><span class="badge badge-<%= log.severity %>"><%= log.severity %></span></td>
                 <td><%= log.event_type %></td>
@@ -57,4 +57,30 @@
       <pre class="pre"><%= fileLogTail %></pre>
     <% } %>
   </section>
+
+  <!-- Modal for showing audit log metadata -->
+  <div id="metadataModal" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:#fff; border:1px solid #ccc; box-shadow:0 2px 10px rgba(0,0,0,0.3); padding:1rem; overflow:auto; z-index:1000;">
+    <h3>Metadata</h3>
+    <pre id="metadataContent" style="white-space: pre-wrap;"></pre>
+    <button onclick="document.getElementById('metadataModal').style.display='none';" style="margin-top:1rem;">Close</button>
+  </div>
+
+  <script>
+    // Attach click listeners to all audit log rows
+    document.querySelectorAll('.log-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const metadataJson = row.dataset.metadata || '{}';
+        let metadata;
+
+        try {
+          metadata = JSON.parse(metadataJson);
+        } catch (e) {
+          metadata = { error: 'Invalid JSON' };
+        }
+
+        document.getElementById('metadataContent').textContent = JSON.stringify(metadata, null, 2);
+        document.getElementById('metadataModal').style.display = 'block';
+      });
+    });
+  </script>
 </div>
