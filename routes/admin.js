@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const auditLogsRepo = require('../db/auditLogsRepo');
+const { safeAuditLog } = require('../utils/auditLogger');
 const { authorize } = require('../utils/authz/authorize');
 const ABILITIES = require('../utils/authz/abilities');
 
@@ -17,37 +18,46 @@ function tailFile(filePath, maxLines = 100) {
 }
 
 // GET /admin/monitor - monitoring page (no auth required yet)
-router.get('/monitor', 
+router.get(
+  '/monitor', 
   authorize(ABILITIES.ADMIN_PANEL),
   function (req, res, next) {
-  res.locals.pageCss = '/stylesheets/pages/admin.css';
+    res.locals.pageCss = '/stylesheets/pages/admin.css';
 
-  // Latest audit logs from DB
-  let latestLogs = [];
-  try {
-    latestLogs = auditLogsRepo.getLatestLogs({ limit: 50 });
-  } catch (e) {
-    // If DB logging isn't used yet, don't crash the page
-    latestLogs = [];
-  }
+    safeAuditLog(req, {
+      event_type: 'admin_monitor_view',
+      severity: 'info',
+      actor_user_id: req.user.id,
+      message: 'Admin monitoring page accessed'
+    })
 
-  // Tail file log (optional)
-  const logPath = process.env.LOG_PATH || path.join(__dirname, '..', 'logs', 'app.log');
-  const fileLogTail = tailFile(logPath, 120);
+    // Latest audit logs from DB
+    let latestLogs = [];
+    try {
+      latestLogs = auditLogsRepo.getLatestLogs({ limit: 50 });
+    } catch (e) {
+      // If DB logging isn't used yet, don't crash the page
+      latestLogs = [];
+    }
 
-  // OS Uptime command 
-  exec('uptime', { timeout: 1500 }, (err, stdout, stderr) => {
-    const uptimeOutput = err
-      ? `Error running uptime: ${err.message}`
-      : (stdout || stderr || '').trim();
+    // Tail file log (optional)
+    const logPath = process.env.LOG_PATH || path.join(__dirname, '..', 'logs', 'app.log');
+    const fileLogTail = tailFile(logPath, 120);
 
-    res.render('admin/monitor', {
-      uptimeOutput,
-      latestLogs,
-      fileLogTail,
-      logPath,
+    // OS Uptime command 
+    exec('uptime', { timeout: 1500 }, (err, stdout, stderr) => {
+      const uptimeOutput = err
+        ? `Error running uptime: ${err.message}`
+        : (stdout || stderr || '').trim();
+
+      res.render('admin/monitor', {
+        uptimeOutput,
+        latestLogs,
+        fileLogTail,
+        logPath,
+      });
     });
-  });
-});
+  }
+);
 
 module.exports = router;
