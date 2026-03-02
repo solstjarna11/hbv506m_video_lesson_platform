@@ -53,9 +53,19 @@ function getEnrolledCoursesForUser(userId) {
     .all(userId);
 }
 
+function getEnrollment(userId, courseId) {
+  return db.prepare(`
+    SELECT *
+    FROM enrollments
+    WHERE user_id = ? AND course_id = ?
+    LIMIT 1
+  `).get(userId, courseId);
+}
+
 module.exports = {
   enrollUserInCourse,
   cancelEnrollment,
   isUserEnrolled,
   getEnrolledCoursesForUser,
+  getEnrollment,
 };
