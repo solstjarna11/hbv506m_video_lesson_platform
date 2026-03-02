@@ -46,6 +46,11 @@ function authorize(ability) {
         allowed = coursePolicy.canDelete(user, course);
         break;
 
+      case ABILITIES.COURSE_PUBLISH:
+        if (!course) return forbidden(res);
+        allowed = coursePolicy.canPublish(user, course);
+        break;
+
       // Lessons (these likely need course + enrollment)
       case ABILITIES.LESSON_VIEW:
         if (!course || !lesson) return forbidden(res);

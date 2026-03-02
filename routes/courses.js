@@ -86,7 +86,10 @@ router.get('/:id',
     const includeUnpublished = coursePolicy.canEdit(req.user, course); // owner/admin can see unpublished.
     const lessons = lessonsRepo.getLessonsByCourseId(course.id, { includeUnpublished }); 
 
-    res.render('courses/show', { course, lessons });
+    const canPublish = coursePolicy.canPublish(req.user, course); 
+    
+    res.render('courses/show', { course, lessons, canPublish });
+
   } catch (err) {
     next(err);
   }
@@ -165,6 +168,34 @@ router.post('/:id',
     next(err);
   }
 });
+
+
+// POST /courses/:id/publish-toggle - publish/unpublish
+router.post(
+  '/:id/publish-toggle',
+  loadCourse('id'),
+  authorize(ABILITIES.COURSE_PUBLISH),
+  (req, res, next) => {
+    try {
+      const course = req.resource.course;
+      const nextVal = course.is_published ? 0 : 1;
+
+      coursesRepo.setPublished(course.id, nextVal);
+
+      safeAuditLog(req, {
+        event_type: 'course_publish_toggled',
+        severity: 'info',
+        actor_user_id: req.user.id,
+        message: `Course publish toggled to ${nextVal} for: ${course.title}`,
+        metadata: { course_id: course.id, is_published: nextVal },
+      });
+
+      res.redirect(`/courses/${course.id}`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // POST /courses/:id/delete - delete course
 router.post('/:id/delete', 

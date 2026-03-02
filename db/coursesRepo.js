@@ -16,6 +16,15 @@ function getPublishedCourses() {
   return db.prepare('SELECT * FROM courses WHERE is_published = 1 ORDER BY id DESC').all();
 }
 
+function setPublished(id, is_published) {
+  const stmt = db.prepare(`
+    UPDATE courses
+    SET is_published = ?, updated_at = datetime('now')
+    WHERE id = ?
+  `);
+  return stmt.run(is_published ? 1 : 0, id).changes;
+}
+
 function createCourse({ title, description, created_by_user_id }) {
   const stmt = db.prepare(`
     INSERT INTO courses (title, description, created _by_user_id)
@@ -41,6 +50,8 @@ function deleteCourse(id) {
 module.exports = {
   getAllCourses,
   getCourseById,
+  getPublishedCourses,
+  setPublished,
   createCourse,
   updateCourse,
   deleteCourse,
