@@ -22,7 +22,10 @@ const coursePolicy = require('../utils/policies/coursePolicy');
 router.get('/', function (req, res, next) {
   try {
     res.locals.pageCss = '/stylesheets/pages/courses.css';
-    const courses = coursesRepo.getAllCourses();
+
+    // Admins/Instructors can view unpublished courses. Students only published courses.
+    const canManage = req.user.role === 'admin' || req.user.role === 'instructor';
+    const courses = canManage ? coursesRepo.getAllCourses() : coursesRepo.getPublishedCourses();
     res.render('courses/index', { 
       courses,
       canCreate: coursePolicy.canCreate(req.user)
@@ -107,7 +110,7 @@ router.post('/',
     }
 
     // Create new course with newID for logging purposes.
-    const newId = coursesRepo.createCourse({ title, description });
+    const newId = coursesRepo.createCourse({ title, description, created_by_user_id: req.user.id, });
 
     // Log audit event (non-blocking)
     safeAuditLog(req,{

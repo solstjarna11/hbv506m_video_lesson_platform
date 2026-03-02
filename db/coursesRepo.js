@@ -12,12 +12,16 @@ function getCourseById(id) {
   return db.prepare('SELECT * FROM courses WHERE id = ?').get(id);
 }
 
-function createCourse({ title, description }) {
+function getPublishedCourses() {
+  return db.prepare('SELECT * FROM courses WHERE is_published = 1 ORDER BY id DESC').all();
+}
+
+function createCourse({ title, description, created_by_user_id }) {
   const stmt = db.prepare(`
-    INSERT INTO courses (title, description)
-    VALUES (?, ?)
+    INSERT INTO courses (title, description, created _by_user_id)
+    VALUES (?, ?, ?)
   `);
-  const result = stmt.run(title, description);
+  const result = stmt.run(title, description, created_by_user_id ?? null);
   return result.lastInsertRowid;
 }
 
