@@ -41,7 +41,7 @@ router.post('/register', registerRateLimit, passwordPolicy, async (req, res) => 
     // Prevent session fixation by regenerating the session on successful registration.
     req.session.regenerate((err) => {
       if (err) return res.status(500).send('Session error');
-      req.session.user = user;
+      req.session.userId = user.id;
       res.redirect('/');
     });
   } catch (err) {
@@ -64,9 +64,7 @@ router.post('/login', loginRateLimit, async (req, res) => {
       if (err) {
         return res.status(500).send('Session error');
       }
-
-      req.session.user = user;
-
+      req.session.userId = user.id;
       res.redirect('/');
     });
 
@@ -86,7 +84,7 @@ router.post('/logout', async (req, res) => {
       return res.status(500).send('Logout unsuccessful')
     }
 
-    res.clearCookie('connect.sid')
+    res.clearCookie('connect.sid', { path: '/' });
     res.redirect('/auth/login')
   })
 });
