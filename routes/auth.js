@@ -93,7 +93,7 @@ router.post('/login', loginRateLimit, async (req, res) => {
 
   } catch (err) {
     safeAuditLog(req, {
-      event_type: 'login_failure',
+      event_type: err.message.includes('locked') ? 'account_locked' : 'login_failure',
       severity: 'warn',
       actor_user_id: null,
       message: `Login attempt failed: ${err.message}`,
