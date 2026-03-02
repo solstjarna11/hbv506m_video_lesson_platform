@@ -68,6 +68,17 @@ function authorize(ability) {
         allowed = lessonPolicy.canDelete(user, course, lesson);
         break;
 
+      case ABILITIES.LESSON_LIST:
+        if (!course) return forbidden(res);
+        // Listing is essentially "can view lessons in this course"
+        allowed =
+          (user?.is_active &&
+            (user.role === 'admin' ||
+              (user.role === 'instructor' && course.created_by_user_id === user.id) ||
+              (course.is_published && enrollment?.status === 'active')));
+        break;
+        
+
       default:
         allowed = false;
     }
