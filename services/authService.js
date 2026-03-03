@@ -40,6 +40,10 @@ module.exports = {
             throw new Error("Invalid credentials")  
         }
 
+        if (!user.is_active) {
+            throw new Error("Invalid credentials");
+        }
+
         usersRepo.clearLoginFailures(user.id) // Clear failed login attempts on successful login
 
         return { 

@@ -3,6 +3,7 @@
 const coursesRepo = require('../../db/coursesRepo');
 const lessonsRepo = require('../../db/lessonsRepo');
 const enrollmentsRepo = require('../../db/enrollmentsRepo'); // for optional ABAC-ish enrollment loading
+const usersRepo = require('../../db/usersRepo');
 
 function loadCourse(param = 'id') {
   return function (req, res, next) {
@@ -96,6 +97,20 @@ function loadCourseFromLessonResource() {
   };
 }
 
+function loadUser(param = 'id') {
+  return function (req, res, next) {
+    const id = parseInt(req.params[param], 10);
+    if (!Number.isFinite(id)) return res.status(400).send('Invalid id');
+
+    const user = usersRepo.getUserById(id);
+    if (!user) return res.status(404).send('User not found');
+
+    req.resource = req.resource || {};
+    req.resource.user = user;
+    next();
+  };
+}
+
 module.exports = {
   loadCourse,
   loadLesson,
@@ -103,4 +118,5 @@ module.exports = {
   loadCourseFromQuery,
   loadCourseFromBody,
   loadCourseFromLessonResource,
+  loadUser,
 };

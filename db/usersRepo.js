@@ -61,6 +61,38 @@ function clearLoginFailures(userId) {
   `).run(userId);
 }
 
+function updateUser(id, { display_name, email, role, is_active } = {}) {
+  const fields = [];
+  const values = [];
+
+  if (display_name !== undefined) {
+    fields.push('display_name = ?');
+    values.push(display_name);
+  }
+  if (email !== undefined) {
+    fields.push('email = ?');
+    values.push(email);
+  }
+  if (role !== undefined) {
+    fields.push('role = ?');
+    values.push(role);
+  }
+  if (is_active !== undefined) {
+    fields.push('is_active = ?');
+    values.push(is_active ? 1 : 0);
+  }
+
+  if (!fields.length) return 0; // nothing to update
+
+  const stmt = db.prepare(`
+    UPDATE users
+    SET ${fields.join(', ')}, updated_at = datetime('now')
+    WHERE id = ?
+  `);
+  values.push(id);
+  return stmt.run(...values).changes;
+}
+
 module.exports = {
     getUserByEmail,
     getUserById,
@@ -68,5 +100,6 @@ module.exports = {
     updatePassword,
     deleteUser,
     recordFailedLogin,
-    clearLoginFailures
+    clearLoginFailures,
+    updateUser
 }
