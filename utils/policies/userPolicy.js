@@ -27,4 +27,13 @@ module.exports = {
 
     return currentUser.role === 'admin';
   },
+
+  canDeactivate(currentUser, targetUser) {
+    if (!currentUser || !targetUser) return false;
+    if (!currentUser.is_active) return false;
+    if (currentUser.role !== 'admin') return false;
+    // Prevent self-deactivation
+    if (currentUser.id === targetUser.id) return false;
+    return true;
+    }
 };

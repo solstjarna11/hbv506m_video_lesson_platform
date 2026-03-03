@@ -24,4 +24,5 @@ module.exports = {
   USER_VIEW: 'user:view',
   USER_EDIT: 'user:edit',
   USER_LIST: 'user:list',
+  USER_DEACTIVATE: 'user:deactivate',
 };

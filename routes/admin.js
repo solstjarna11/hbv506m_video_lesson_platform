@@ -9,6 +9,8 @@ const auditLogsRepo = require('../db/auditLogsRepo');
 const { safeAuditLog } = require('../utils/auditLogger');
 const { authorize } = require('../utils/authz/authorize');
 const ABILITIES = require('../utils/authz/abilities');
+const usersRepo = require('../db/usersRepo');
+const { loadUser } = require('../utils/authz/loaders');
 
 function tailFile(filePath, maxLines = 100) {
   if (!fs.existsSync(filePath)) return null;
@@ -59,5 +61,19 @@ router.get(
     });
   }
 );
+
+router.get('/user-search', authorize(ABILITIES.USER_LIST), function (req, res, next) {
+  try {
+    const userId = parseInt(req.query.id, 10);
+    if (!Number.isFinite(userId)) return res.status(400).send('Invalid user ID');
+
+    const userFound = usersRepo.getUserById(userId);
+    if (!userFound) return res.status(404).send('User not found');
+
+    res.redirect(`/users/${userId}`);
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

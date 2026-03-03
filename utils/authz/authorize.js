@@ -68,14 +68,14 @@ function authorize(ability) {
         break;
 
       case ABILITIES.COURSE_ENROLL: {
-        if (!course) return forbidden(res);
+        if (!course) return forbidden(req, res, ability);
         // enrollment is optional; if loader ran it will be there
         allowed = coursePolicy.canEnroll(user, course, enrollment);
         break;
       }
 
       case ABILITIES.COURSE_UNENROLL: {
-        if (!enrollment) return forbidden(res);
+        if (!enrollment) return forbidden(req, res, ability);
         allowed = coursePolicy.canUnenroll(user, enrollment);
         break;
       }
@@ -111,22 +111,25 @@ function authorize(ability) {
               (user.role === 'instructor' && course.created_by_user_id === user.id) ||
               (course.is_published && enrollment?.status === 'active')));
         break;
-      
-      case ABILITIES.ADMIN_PANEL:
-        allowed = user?.role === 'admin';
-        break;
 
       // Users
       case ABILITIES.USER_VIEW:
+        if (!req.resource?.user) return forbidden(req, res, ability);
         allowed = userPolicy.canView(user, req.resource?.user);
         break;
 
       case ABILITIES.USER_EDIT:
+        if (!req.resource?.user) return forbidden(req, res, ability);
         allowed = userPolicy.canEdit(user, req.resource?.user);
         break;
 
       case ABILITIES.USER_LIST:
         allowed = userPolicy.canList(user);
+        break;
+
+      case ABILITIES.USER_DEACTIVATE:
+        if (!req.resource?.user) return forbidden(req, res, ability);
+        allowed = userPolicy.canDeactivate(user, req.resource.user);
         break;
 
       default:

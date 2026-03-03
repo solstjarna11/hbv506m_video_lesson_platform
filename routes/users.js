@@ -18,6 +18,7 @@ router.get(
       res.render('users/profile', {
         user,
         adminView: req.user.role === 'admin', // optionally show admin controls
+        csrfToken: req.csrfToken(),
       });
     } catch (err) {
       next(err);
@@ -38,7 +39,7 @@ router.post(
       // Only allow admins to change the role
       let role = user.role; 
       if (req.user.role === 'admin' && req.body.role) {
-        const allowedRoles = ['user', 'admin', 'instructor'];
+        const allowedRoles = ['student', 'admin', 'instructor'];
         if (allowedRoles.includes(req.body.role)) {
           role = req.body.role;
         }
@@ -62,5 +63,26 @@ router.post(
     }
   }
 );
+
+router.post('/:id/deactivate', loadUser('id'), authorize(ABILITIES.USER_DEACTIVATE), (req, res, next) => {
+  try {
+    const userToDeactivate = req.resource.user;
+
+    usersRepo.updateUser(userToDeactivate.id, { is_active: false });
+
+    safeAuditLog(req, {
+      event_type: 'admin_deactivate_user',
+      severity: 'warn',
+      actor_user_id: req.user.id,
+      message: `User deactivated`,
+      metadata: { userId: userToDeactivate.id },
+    });
+
+    res.redirect(`/users/${userToDeactivate.id}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 module.exports = router;
