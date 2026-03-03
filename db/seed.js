@@ -15,11 +15,11 @@ const saltRounds = 10;
 
 // Choose test passwords (don’t reuse real passwords)
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'admin';
-const ADMIN_PASSWORD2 = process.env.SEED_ADMIN_PASSWORD2 || 'admin2'
 const STUDENT_PASSWORD = process.env.SEED_STUDENT_PASSWORD || 'student';
-const STUDENT_PASSWORD2 = process.env.SEED_STUDENT_PASSWORD2 || 'student2';
 const INSTRUCTOR_PASSWORD = process.env.SEED_INSTRUCTOR_PASSWORD || 'instructor';
-const INSTRUCTOR_PASSWORD2 = process.env.SEED_INSTRUCTOR_PASSWORD || 'instructor2';
+const ADMIN_PASSWORD2 = process.env.SEED_ADMIN_PASSWORD2 || 'admin2'
+const STUDENT_PASSWORD2 = process.env.SEED_STUDENT_PASSWORD2 || 'student2';
+const INSTRUCTOR_PASSWORD2 = process.env.SEED_INSTRUCTOR_PASSWORD2 || 'instructor2';
 
 
 const insertUser = db.prepare(`
@@ -35,10 +35,10 @@ const instructorHash = bcrypt.hashSync(INSTRUCTOR_PASSWORD, saltRounds);
 const instructorHash2 = bcrypt.hashSync(INSTRUCTOR_PASSWORD2, saltRounds);
 
 insertUser.run('admin@example.com', adminHash, 'admin', 'Admin User');
-insertUser.run('admin2@example.com', adminHash2, 'admin2', 'Admin User 2');
 insertUser.run('student@example.com', studentHash, 'student', 'Student User');
-insertUser.run('student2@example.com', studentHash2, 'student2', 'Student User 2');
 insertUser.run('instructor@example.com', instructorHash, 'instructor', 'Instructor User');
+insertUser.run('admin2@example.com', adminHash2, 'admin2', 'Admin User 2');
+insertUser.run('student2@example.com', studentHash2, 'student2', 'Student User 2');
 insertUser.run('instructor2@example.com', instructorHash2, 'instructor2', 'Instructor User2');
 
 
