@@ -19,7 +19,7 @@ function tailFile(filePath, maxLines = 100) {
   return lines.slice(Math.max(0, lines.length - maxLines)).join('\n');
 }
 
-// GET /admin/monitor - monitoring page (no auth required yet)
+// GET /admin/monitor - monitoring page
 router.get(
   '/monitor', 
   authorize(ABILITIES.ADMIN_PANEL),

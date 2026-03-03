@@ -74,7 +74,7 @@ router.post('/:id/deactivate', loadUser('id'), authorize(ABILITIES.USER_DEACTIVA
       event_type: 'admin_deactivate_user',
       severity: 'warn',
       actor_user_id: req.user.id,
-      message: `User deactivated`,
+      message: `User ${userToDeactivate.id} deactivated`,
       metadata: { userId: userToDeactivate.id },
     });
 
