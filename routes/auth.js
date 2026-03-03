@@ -44,7 +44,7 @@ router.post('/register', registerRateLimit, passwordPolicy, async (req, res) => 
       event_type: 'register_success',
       severity: 'info',
       actor_user_id: user.id,
-      message: `New user registered: ${user.display_name}`,
+      message: `New user registered: ${user.email}`,
     });
     
     // Prevent session fixation by regenerating the session on successful registration.
@@ -80,7 +80,7 @@ router.post('/login', loginRateLimit, async (req, res) => {
       event_type: 'login_success',
       severity: 'info',
       actor_user_id: user.id,
-      message: `Successful login: ${user.display_name}`,
+      message: `Successful login: ${user.email}`,
     });
     
     // Prevent session fixation by regenerating the session on successful login.
