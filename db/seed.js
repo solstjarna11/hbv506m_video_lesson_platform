@@ -37,9 +37,9 @@ const instructorHash2 = bcrypt.hashSync(INSTRUCTOR_PASSWORD2, saltRounds);
 insertUser.run('admin@example.com', adminHash, 'admin', 'Admin User');
 insertUser.run('student@example.com', studentHash, 'student', 'Student User');
 insertUser.run('instructor@example.com', instructorHash, 'instructor', 'Instructor User');
-insertUser.run('admin2@example.com', adminHash2, 'admin2', 'Admin User 2');
-insertUser.run('student2@example.com', studentHash2, 'student2', 'Student User 2');
-insertUser.run('instructor2@example.com', instructorHash2, 'instructor2', 'Instructor User2');
+insertUser.run('admin2@example.com', adminHash2, 'admin', 'Admin User 2');
+insertUser.run('student2@example.com', studentHash2, 'student', 'Student User 2');
+insertUser.run('instructor2@example.com', instructorHash2, 'instructor', 'Instructor User2');
 
 
 
