@@ -20,55 +20,84 @@ function tailFile(filePath, maxLines = 100) {
 }
 
 // GET /admin/monitor - monitoring page
-router.get(
-  '/monitor', 
-  authorize(ABILITIES.ADMIN_PANEL),
-  function (req, res, next) {
+router.get('/monitor', authorize(ABILITIES.ADMIN_PANEL), function (req, res, next) {
+  try {
     res.locals.pageCss = '/stylesheets/pages/admin.css';
 
-    safeAuditLog(req, {
-      event_type: 'admin_monitor_view',
-      severity: 'info',
-      actor_user_id: req.user.id,
-      message: 'Admin monitoring page accessed'
-    })
-
-    // Latest audit logs from DB
     let latestLogs = [];
     try {
       latestLogs = auditLogsRepo.getLatestLogs({ limit: 50 });
-    } catch (e) {
-      // If DB logging isn't used yet, don't crash the page
-      latestLogs = [];
+    } catch (err) {
+      safeAuditLog(req, {
+        event_type: 'server_error',
+        severity: 'error',
+        actor_user_id: req.user.id,
+        message: `Failed to retrieve audit logs: ${err.message}`,
+        metadata_json: JSON.stringify({ stack: err.stack }),
+      });
     }
 
     // Tail file log (optional)
     const logPath = process.env.LOG_PATH || path.join(__dirname, '..', 'logs', 'app.log');
-    const fileLogTail = tailFile(logPath, 120);
+    let fileLogTail = null;
+    try {
+      fileLogTail = tailFile(logPath, 120);
+    } catch (err) {
+      safeAuditLog(req, {
+        event_type: 'server_error',
+        severity: 'warn',
+        actor_user_id: req.user.id,
+        message: `Failed to tail log file: ${err.message}`,
+        metadata_json: JSON.stringify({ stack: err.stack }),
+      });
+    }
 
     // OS Uptime command 
     exec('uptime', { timeout: 1500 }, (err, stdout, stderr) => {
+      if (err) {
+        safeAuditLog(req, {
+          event_type: 'server_error',
+          severity: 'warn',
+          actor_user_id: req.user.id,
+          message: `uptime command failed: ${err.message}`,
+          metadata_json: JSON.stringify({ stack: err.stack }),
+        })
+      }
+
       const uptimeOutput = err
-        ? `Error running uptime: ${err.message}`
+        ? 'System status unavailable.'
         : (stdout || stderr || '').trim();
+
+      safeAuditLog(req, {
+        event_type: 'admin_monitor_view',
+        severity: 'info',
+        actor_user_id: req.user.id,
+        message: 'Admin monitoring page accessed'
+      })
 
       res.render('admin/monitor', {
         uptimeOutput,
         latestLogs,
         fileLogTail,
-        logPath,
+        searchError: req.query.error || null,
       });
     });
+  } catch (err) {
+    next(err)
   }
-);
+});
 
 router.get('/user-search', authorize(ABILITIES.USER_LIST), function (req, res, next) {
   try {
     const userId = parseInt(req.query.id, 10);
-    if (!Number.isFinite(userId)) return res.status(400).send('Invalid user ID');
+    if (!Number.isFinite(userId)) {
+      return res.redirect('/admin/monitor?error=invalid_id');
+    }
 
     const userFound = usersRepo.getUserById(userId);
-    if (!userFound) return res.status(404).send('User not found');
+    if (!userFound) {
+      return res.redirect('/admin/monitor?error=user_not_found');
+    }
 
     res.redirect(`/users/${userId}`);
   } catch (err) {

@@ -3,12 +3,16 @@
     <a class="back-link" href="/">← Home</a>
     <div>
       <h1>Admin Monitor</h1>
-      <p class="muted">Basic monitoring output (no auth required yet).</p>
     </div>
   </header>
 
   <section class="panel">
     <h2>Search User by ID</h2>
+    <% if (searchError === 'user_not_found') { %>
+      <p class="error">No user found with that ID.</p>
+    <% } else if (searchError === 'invalid_id') { %>
+      <p class="error">Invalid user ID.</p>
+    <% } %>
     <form method="GET" action="/admin/user-search">
       <input type="number" name="id" placeholder="Enter user ID" required />
       <button type="submit">Go</button>
@@ -57,7 +61,6 @@
 
   <section class="panel">
     <h2>Application Log (File)</h2>
-    <p class="muted">Path: <code><%= logPath %></code></p>
 
     <% if (!fileLogTail) { %>
       <p class="muted">No log file found yet. Create logs/app.log or add request logging middleware.</p>

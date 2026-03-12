@@ -150,6 +150,7 @@ function createApp({ sessionStore } = {}) {
 
   // CSRF error handler
   app.use((err, req, res, next) => {
+    console.error(err);
     if (err.code === 'EBADCSRFTOKEN') {
       safeAuditLog(req, {
         event_type: 'csrf_violation',
