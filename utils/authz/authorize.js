@@ -18,7 +18,9 @@ function forbidden(req, res, ability) {
     metadata: { path: req.path, method: req.method }
   });
 
-  return res.status(403).send('Forbidden');
+  res.locals.message = 'You do not have permission to access this page.';
+  res.locals.status = 403;
+  return res.status(403).render('error');
 }
 
 /**
