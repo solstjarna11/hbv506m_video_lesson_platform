@@ -19,10 +19,24 @@ async function main() {
   let sessionStore;
 
   const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-  redisClient = createClient({ url: redisUrl });
+  
+  redisClient = createClient({
+    url: redisUrl,
+    socket: {
+      reconnectStrategy: (retries) => {
+        if (retries > 3) return new Error('Redis unavailable');
+        return 500;
+      },
+      connectTimeout: 3000,
+    }
+  });
 
   redisClient.on('error', (err) => {
     console.error('Redis Client Error:', err);
+  });
+
+  redisClient.on('reconnecting', () => {
+    console.warn('Redis reconnecting...');
   });
 
   try {

@@ -80,6 +80,16 @@ function createApp({ sessionStore } = {}) {
     sessionOptions.store = sessionStore;
   }
 
+  app.use((req, res, next) => {
+    res.setTimeout(5000, () => {
+      res.status(503).render('error', {
+        message: 'Service temporarily unavailable. Please try again.',
+        status: 503,
+      });
+    });
+    next();
+  });
+
   app.use(session(sessionOptions));
 
   // make user available to all views through res.locals
