@@ -1,2 +1,0 @@
-/Users/andri/Documents/HÍ/Secure-Software-HBV506M/Project/hbv506m_video_lesson_platform/logs/20260316-1611-01-error.log.gz
-/Users/andri/Documents/HÍ/Secure-Software-HBV506M/Project/hbv506m_video_lesson_platform/logs/20260316-1612-01-error.log.gz
