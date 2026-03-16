@@ -1,29 +1,83 @@
 var express = require("express");
 var router = express.Router();
-
 const { exec } = require("child_process");
 const fs = require("fs");
-const path = require("path");
 
+const { accessLogPath, errorLogPath } = require("../utils/logging/fileStreams");
+const { badRequestError, notFoundError } = require("../utils/errors/httpErrors");
 const auditLogsRepo = require("../db/auditLogsRepo");
 const { safeAuditLog } = require("../utils/auditLogger");
 const { authorize } = require("../utils/authz/authorize");
 const ABILITIES = require("../utils/authz/abilities");
 const usersRepo = require("../db/usersRepo");
-const { loadUser } = require("../utils/authz/loaders");
 
-function tailFile(filePath, maxLines = 100) {
-  if (!fs.existsSync(filePath)) return null;
-  const content = fs.readFileSync(filePath, "utf8");
-  const lines = content.split("\n");
-  return lines.slice(Math.max(0, lines.length - maxLines)).join("\n");
+// Helpers
+function sanitizeQueryString(value, maxLength = 100) {
+  if (typeof value !== "string") return "";
+
+  return value
+    .trim()
+    .replace(/[\r\n\t]+/g, " ")
+    .slice(0, maxLength);
+}
+
+function sanitizeQueryInt(value, fallback = null, min = 0, max = 1000) {
+  const parsed = parseInt(value, 10);
+
+  if (!Number.isFinite(parsed)) return fallback;
+  if (parsed < min) return min;
+  if (parsed > max) return max;
+
+  return parsed;
+}
+
+function resolveLogPath(logType) {
+  switch (logType) {
+    case "error":
+      return { logType: "error", logPath: errorLogPath };
+    case "access":
+    default:
+      return { logType: "access", logPath: accessLogPath };
+  }
+}
+
+function tailFile(filePath, maxLines = 100, maxBytes = 64 * 1024) {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+
+    const stats = fs.statSync(filePath);
+    const start = Math.max(0, stats.size - maxBytes);
+    const length = stats.size - start;
+
+    const fd = fs.openSync(filePath, "r");
+
+    try {
+      const buffer = Buffer.alloc(length);
+      fs.readSync(fd, buffer, 0, length, start);
+
+      let content = buffer.toString("utf8");
+
+      // If we started in the middle of the file, the first line may be partial.
+      if (start > 0) {
+        const firstNewlineIndex = content.indexOf("\n");
+        if (firstNewlineIndex !== -1) {
+          content = content.slice(firstNewlineIndex + 1);
+        }
+      }
+
+      const lines = content.split("\n").filter(Boolean);
+      return lines.slice(-maxLines).join("\n");
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch (_) {
+    return null;
+  }
 }
 
 // GET /admin/monitor - monitoring page
-router.get(
-  "/monitor",
-  authorize(ABILITIES.ADMIN_PANEL),
-  function (req, res, next) {
+router.get("/monitor", authorize(ABILITIES.ADMIN_PANEL), function (req, res, next) {
+  try {
     res.locals.pageCss = "/stylesheets/pages/admin.css";
 
     safeAuditLog(req, {
@@ -33,36 +87,28 @@ router.get(
       message: "Admin monitoring page accessed",
     });
 
-    // Latest audit logs from DB
-    let latestLogs = [];
-
-    // dynamic query search filters
     const filters = {
-      severity: req.query.severity || "",
-      event_type: req.query.event_type || "",
-      actor_user_id: Number.isFinite(parseInt(req.query.actor_user_id, 10))
-        ? parseInt(req.query.actor_user_id, 10)
-        : null,
-      q: req.query.q || "",
-      from: req.query.from || "",
-      to: req.query.to || "",
-      limit: Number.isFinite(parseInt(req.query.limit, 10))
-        ? parseInt(req.query.limit, 10)
-        : 50,
+      severity: sanitizeQueryString(req.query.severity, 30),
+      event_type: sanitizeQueryString(req.query.event_type, 50),
+      actor_user_id: sanitizeQueryInt(req.query.actor_user_id, null, 1, 1000000),
+      q: sanitizeQueryString(req.query.q, 100),
+      from: sanitizeQueryString(req.query.from, 30),
+      to: sanitizeQueryString(req.query.to, 30),
+      limit: sanitizeQueryInt(req.query.limit, 50, 1, 200),
     };
+
+    let latestLogs = [];
     try {
       latestLogs = auditLogsRepo.searchLogs(filters);
-    } catch (e) {
-      // If DB logging isn't used yet, don't crash the page
+    } catch (_) {
       latestLogs = [];
     }
 
-    // Tail file log (optional)
-    const logPath =
-      process.env.LOG_PATH || path.join(__dirname, "..", "logs", "app.log");
-    const fileLogTail = tailFile(logPath, 120);
+    const requestedLogType = sanitizeQueryString(req.query.log_type, 20);
+    const { logType, logPath } = resolveLogPath(requestedLogType);
+    const fileLogTail = tailFile(logPath, 120, 64 * 1024);
 
-    // OS Uptime command
+    // Intentionally retained for now pending course clarification about command-execution testing.
     exec("uptime", { timeout: 1500 }, (err, stdout, stderr) => {
       if (err) {
         return next(err);
@@ -75,29 +121,43 @@ router.get(
         latestLogs,
         fileLogTail,
         logPath,
+        logType,
         filters,
       });
     });
-  },
-);
+  } catch (err) {
+    next(err);
+  }
+});
 
-router.get(
-  "/user-search",
-  authorize(ABILITIES.USER_LIST),
-  function (req, res, next) {
-    try {
-      const userId = parseInt(req.query.id, 10);
-      if (!Number.isFinite(userId))
-        return res.status(400).send("Invalid user ID");
+router.get("/user-search", authorize(ABILITIES.USER_LIST), function (req, res, next) {
+  try {
+    const userId = parseInt(req.query.id, 10);
 
-      const userFound = usersRepo.getUserById(userId);
-      if (!userFound) return res.status(404).send("User not found");
-
-      res.redirect(`/users/${userId}`);
-    } catch (err) {
-      next(err);
+    if (!Number.isFinite(userId)) {
+      return next(
+        badRequestError("The request was invalid.", {
+          reason: "invalid_user_id",
+          providedValue: req.query.id,
+        })
+      );
     }
-  },
-);
+
+    const userFound = usersRepo.getUserById(userId);
+
+    if (!userFound) {
+      return next(
+        notFoundError("The requested user was not found.", {
+          resourceType: "user",
+          resourceId: userId,
+        })
+      );
+    }
+
+    return res.redirect(`/users/${userId}`);
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

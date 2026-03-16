@@ -2,6 +2,11 @@
 // All queries are parameterized (?). Defense against injection (A05).
 
 const db = require("./index");
+const {
+  sanitizeString,
+  stringifyMetadata,
+  MAX_USER_AGENT_LENGTH,
+} = require("../utils/logging/sanitizeLogData");
 
 function logEvent({
   event_type,
@@ -10,9 +15,9 @@ function logEvent({
   ip_address = null,
   user_agent = null,
   message = null,
-  metadata = null, // JS object
+  metadata = null,
 }) {
-  const metadata_json = metadata ? JSON.stringify(metadata) : null;
+  const metadata_json = stringifyMetadata(metadata);
 
   const stmt = db.prepare(`
     INSERT INTO audit_logs
@@ -21,12 +26,12 @@ function logEvent({
   `);
 
   const result = stmt.run(
-    event_type,
-    severity,
+    sanitizeString(event_type, 80),
+    sanitizeString(severity, 20),
     actor_user_id,
-    ip_address,
-    user_agent,
-    message,
+    sanitizeString(ip_address, 100),
+    sanitizeString(user_agent, MAX_USER_AGENT_LENGTH),
+    sanitizeString(message, 300),
     metadata_json,
   );
 

@@ -3,14 +3,14 @@
     <a class="back-link" href="/">← Home</a>
     <div>
       <h1>Admin Monitor</h1>
-      <p class="muted">Basic monitoring output (no auth required yet).</p>
+      <p class="muted">Monitoring dashboard for audit events and application log output.</p>
     </div>
   </header>
 
   <section class="panel">
     <h2>Search User by ID</h2>
     <form method="GET" action="/admin/user-search">
-      <input type="number" name="id" placeholder="Enter user ID" required />
+      <input type="number" name="id" placeholder="Enter user ID" min="1" required />
       <button type="submit">Go</button>
     </form>
   </section>
@@ -18,6 +18,8 @@
   <section class="panel">
     <h2>Audit Log Filters</h2>
     <form method="GET" action="/admin/monitor" class="monitor-filters">
+      <input type="hidden" name="log_type" value="<%= logType || 'access' %>">
+
       <div>
         <label for="severity">Severity</label>
         <select id="severity" name="severity">
@@ -64,12 +66,22 @@
 
       <div>
         <label for="from">From</label>
-        <input id="from" type="datetime-local" name="from" value="<%= filters?.from || '' %>">
+        <input
+          id="from"
+          type="datetime-local"
+          name="from"
+          value="<%= filters?.from || '' %>"
+        >
       </div>
 
       <div>
         <label for="to">To</label>
-        <input id="to" type="datetime-local" name="to" value="<%= filters?.to || '' %>">
+        <input
+          id="to"
+          type="datetime-local"
+          name="to"
+          value="<%= filters?.to || '' %>"
+        >
       </div>
 
       <div>
@@ -79,14 +91,14 @@
           type="number"
           name="limit"
           min="1"
-          max="500"
+          max="200"
           value="<%= filters?.limit || 50 %>"
         >
       </div>
 
       <div class="filter-actions">
         <button type="submit">Apply Filters</button>
-        <a href="/admin/monitor">Reset</a>
+        <a href="/admin/monitor?log_type=<%= logType || 'access' %>">Reset</a>
       </div>
     </form>
   </section>
@@ -98,9 +110,10 @@
 
   <section class="panel">
     <h2>Latest Audit Logs (DB)</h2>
+    <p class="muted">Click a row to inspect metadata.</p>
 
     <% if (!latestLogs || latestLogs.length === 0) { %>
-      <p class="muted">No audit logs found.</p>
+      <p class="muted">No audit logs found for the current filters.</p>
     <% } else { %>
       <div class="table-wrap">
         <table class="table">
@@ -118,7 +131,9 @@
             <% latestLogs.forEach(log => { %>
               <tr class="log-row" data-metadata='<%= log.metadata_json || "{}" %>'>
                 <td><%= log.created_at %></td>
-                <td><span class="badge badge-<%= log.severity %>"><%= log.severity %></span></td>
+                <td>
+                  <span class="badge badge-<%= log.severity %>"><%= log.severity %></span>
+                </td>
                 <td><%= log.event_type %></td>
                 <td><%= log.actor_user_id || '-' %></td>
                 <td><%= log.ip_address || '-' %></td>
@@ -132,26 +147,63 @@
   </section>
 
   <section class="panel">
-    <h2>Application Log (File)</h2>
+    <div class="log-section-header">
+      <div>
+        <h2>Log File Viewer</h2>
+        <p class="muted">
+          Showing <strong><%= logType === 'error' ? 'error.log' : 'access.log' %></strong>
+        </p>
+      </div>
+
+      <div class="log-selector">
+        <form method="GET" action="/admin/monitor">
+          <input type="hidden" name="severity" value="<%= filters?.severity || '' %>">
+          <input type="hidden" name="event_type" value="<%= filters?.event_type || '' %>">
+          <input type="hidden" name="actor_user_id" value="<%= filters?.actor_user_id || '' %>">
+          <input type="hidden" name="q" value="<%= filters?.q || '' %>">
+          <input type="hidden" name="from" value="<%= filters?.from || '' %>">
+          <input type="hidden" name="to" value="<%= filters?.to || '' %>">
+          <input type="hidden" name="limit" value="<%= filters?.limit || 50 %>">
+
+          <label for="log_type">View log:</label>
+          <select name="log_type" id="log_type" onchange="this.form.submit()">
+            <option value="access" <%= logType === 'access' ? 'selected' : '' %>>Access log</option>
+            <option value="error" <%= logType === 'error' ? 'selected' : '' %>>Error log</option>
+          </select>
+        </form>
+      </div>
+    </div>
+
     <p class="muted">Path: <code><%= logPath %></code></p>
 
     <% if (!fileLogTail) { %>
-      <p class="muted">No log file found yet. Create logs/app.log or add request logging middleware.</p>
+      <p class="muted">
+        No log data is available for this file yet.
+      </p>
     <% } else { %>
-      <pre class="pre"><%= fileLogTail %></pre>
+      <div class="log-output">
+        <pre class="pre"><%= fileLogTail %></pre>
+      </div>
     <% } %>
   </section>
 
-  <!-- Modal for showing audit log metadata -->
-  <div id="metadataModal" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:#fff; border:1px solid #ccc; box-shadow:0 2px 10px rgba(0,0,0,0.3); padding:1rem; overflow:auto; z-index:1000;">
+  <div
+    id="metadataModal"
+    style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:#fff; border:1px solid #ccc; box-shadow:0 2px 10px rgba(0,0,0,0.3); padding:1rem; overflow:auto; z-index:1000;"
+  >
     <h3>Metadata</h3>
     <pre id="metadataContent" style="white-space: pre-wrap;"></pre>
-    <button onclick="document.getElementById('metadataModal').style.display='none';" style="margin-top:1rem;">Close</button>
+    <button
+      type="button"
+      onclick="document.getElementById('metadataModal').style.display='none';"
+      style="margin-top:1rem;"
+    >
+      Close
+    </button>
   </div>
 
   <script>
-    // Attach click listeners to all audit log rows
-    document.querySelectorAll('.log-row').forEach(row => {
+    document.querySelectorAll('.log-row').forEach((row) => {
       row.addEventListener('click', () => {
         const metadataJson = row.dataset.metadata || '{}';
         let metadata;

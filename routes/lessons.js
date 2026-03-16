@@ -126,10 +126,10 @@ router.post(
 );
 
 // --------------------------------------
-// GET /lessons/:id (lesson detail)
+// GET /lessons/:id(\\d+) (lesson detail)
 // --------------------------------------
 router.get(
-  '/:id',
+  '/:id(\\d+)',
   loadLesson('id'),
   loadCourseFromLessonResource(),
   loadEnrollmentFromCourse(),
@@ -148,10 +148,10 @@ router.get(
 );
 
 // --------------------------------------
-// GET /lessons/:id/edit
+// GET /lessons/:id(\\d+)/edit
 // --------------------------------------
 router.get(
-  '/:id/edit',
+  '/:id(\\d+)/edit',
   loadLesson('id'),
   loadCourseFromLessonResource(),
   authorize(ABILITIES.LESSON_EDIT),
@@ -180,10 +180,10 @@ router.get(
 );
 
 // --------------------------------------
-// POST /lessons/:id (update)
+// POST /lessons/:id(\\d+) (update)
 // --------------------------------------
 router.post(
-  '/:id',
+  '/:id(\\d+)',
   loadLesson('id'),
   loadCourseFromLessonResource(),
   authorize(ABILITIES.LESSON_EDIT),
@@ -238,10 +238,10 @@ router.post(
 );
 
 // --------------------------------------
-// POST /lessons/:id/delete
+// POST /lessons/:id(\\d+)/delete
 // --------------------------------------
 router.post(
-  '/:id/delete',
+  '/:id(\\d+)/delete',
   loadLesson('id'),
   loadCourseFromLessonResource(),
   authorize(ABILITIES.LESSON_DELETE),
