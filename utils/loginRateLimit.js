@@ -1,4 +1,5 @@
 const rateLimit = require("express-rate-limit");
+const { rateLimitAuditLogger } = require("./logging/rateLimitAuditLogger");
 
 module.exports = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -10,4 +11,13 @@ module.exports = rateLimit({
   validate: { trustProxy: false },
 
   message: "Too many login attempts, please try again later.",
+  handler: rateLimitAuditLogger({
+    eventType: "login_rate_limited",
+    message: "Login rate limit exceeded",
+    metadata: {
+      windowMs: 15 * 60 * 1000,
+      maxAttempts: 10,
+      flow: "login",
+    },
+  }),
 });
