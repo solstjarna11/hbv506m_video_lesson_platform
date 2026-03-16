@@ -4,6 +4,8 @@ var router = express.Router();
 const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const { accessLogPath } = require('../utils/logging/fileStreams');
+
 
 const auditLogsRepo = require("../db/auditLogsRepo");
 const { safeAuditLog } = require("../utils/auditLogger");
@@ -58,8 +60,7 @@ router.get(
     }
 
     // Tail file log (optional)
-    const logPath =
-      process.env.LOG_PATH || path.join(__dirname, "..", "logs", "app.log");
+    const logPath = accessLogPath;
     const fileLogTail = tailFile(logPath, 120);
 
     // OS Uptime command

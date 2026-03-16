@@ -4,7 +4,7 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-const fs = require("fs");
+const { accessLogStream } = require("./utils/logging/fileStreams");
 const session = require("express-session");
 const csurf = require("csurf"); // anti csrf middleware
 // centralized exception handling
@@ -45,13 +45,11 @@ function createApp({ sessionStore } = {}) {
   // --------------------------
   // Logging
   // --------------------------
-  const defaultLogFile = path.join(__dirname, "logs", "app.log");
-  const logFilePath = process.env.LOG_PATH || defaultLogFile;
-  fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
-
-  const accessLogStream = fs.createWriteStream(logFilePath, { flags: "a" });
   app.use(logger("combined", { stream: accessLogStream }));
-  app.use(logger("dev"));
+
+  if (process.env.NODE_ENV !== "test") {
+    app.use(logger("dev"));
+  }
 
   // --------------------------
   // Parsers / static
