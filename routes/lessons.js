@@ -20,6 +20,16 @@ const { safeAuditLog } = require('../utils/auditLogger');
 const coursePolicy = require('../utils/policies/coursePolicy'); // for includeUnpublished decision
 const lessonPolicy = require('../utils/policies/lessonPolicy');
 
+function isSafeUrl(value) {
+  if (!value) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:'; 
+  } catch {
+    return false;
+  }
+}
+
 // --------------------------------------
 // GET /lessons?course_id=1  (list lessons for a course)
 // --------------------------------------
@@ -98,6 +108,21 @@ router.post(
             is_published,
           },
           error: 'Title is required.',
+        });
+      }
+
+      if (!isSafeUrl(video_url)) {
+        res.locals.pageCss = '/stylesheets/pages/courses.css';
+        return res.status(400).render('lessons/new', {
+          course,
+          form: {
+            title,
+            description: description || '',
+            video_url: video_url || '',
+            position: Number.isFinite(position) ? position : 0,
+            is_published,
+          },
+          error: 'Video URL invalid (https only).',
         });
       }
 
@@ -211,6 +236,22 @@ router.post(
             is_published,
           },
           error: 'Title is required.',
+        });
+      }
+
+      if (!isSafeUrl(video_url)) {
+        res.locals.pageCss = '/stylesheets/pages/courses.css';
+        return res.status(400).render('lessons/new', {
+          course,
+          lesson,
+          form: {
+            title,
+            description: description || '',
+            video_url: video_url || '',
+            position: Number.isFinite(position) ? position : (lesson.position ?? 0),
+            is_published,
+          },
+          error: 'Video URL invalid (https only).',
         });
       }
 
