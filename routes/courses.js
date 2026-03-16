@@ -12,7 +12,6 @@ const ABILITIES = require('../utils/authz/abilities');
 // Repositories
 const coursesRepo = require('../db/coursesRepo');
 const lessonsRepo = require('../db/lessonsRepo');
-const auditLogsRepo = require('../db/auditLogsRepo');
 const enrollmentsRepo = require('../db/enrollmentsRepo');
 
 // Utils
