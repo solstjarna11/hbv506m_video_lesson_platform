@@ -1,5 +1,5 @@
 <%
-const status = error && error.statusCode ? error.statusCode : null;
+const status = (error && error.statusCode) || null;
 %>
 
 <h1>
@@ -20,7 +20,6 @@ const status = error && error.statusCode ? error.statusCode : null;
   <p>Status: <%= status %></p>
 <% } %>
 
-<a href="/">Return to home page</a>
 
 <p>
   <% if (status === 404) { %>
@@ -31,3 +30,5 @@ const status = error && error.statusCode ? error.statusCode : null;
     Please try again later.
   <% } %>
 </p>
+
+<a href="/">Return to home page</a>
