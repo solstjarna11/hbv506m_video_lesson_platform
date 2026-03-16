@@ -16,10 +16,9 @@ const status = (error && error.statusCode) || null;
 
 <p><%= message || 'The request could not be completed.' %></p>
 
-<% if (status) { %>
+<% if (status && error && error.statusCode) { %>
   <p>Status: <%= status %></p>
 <% } %>
-
 
 <p>
   <% if (status === 404) { %>
