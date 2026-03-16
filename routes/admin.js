@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-
+const os = require('os');
 const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
@@ -33,11 +33,26 @@ function sanitizeQueryInt(value, fallback = null, min = 0, max = 1000) {
   return parsed;
 }
 
-function tailFile(filePath, maxLines = 100) {
+function tailFile(filePath, maxLines = 100, maxBytes = 64 * 1024) {
   if (!fs.existsSync(filePath)) return null;
-  const content = fs.readFileSync(filePath, "utf8");
-  const lines = content.split("\n");
-  return lines.slice(Math.max(0, lines.length - maxLines)).join("\n");
+
+  const stats = fs.statSync(filePath);
+  const start = Math.max(0, stats.size - maxBytes);
+  const length = stats.size - start;
+
+  const fd = fs.openSync(filePath, "r");
+
+  try {
+    const buffer = Buffer.alloc(length);
+    fs.readSync(fd, buffer, 0, length, start);
+
+    const content = buffer.toString("utf8");
+    const lines = content.split("\n");
+
+    return lines.slice(-maxLines).join("\n");
+  } finally {
+    fs.closeSync(fd);
+  }
 }
 
 // GET /admin/monitor - monitoring page
