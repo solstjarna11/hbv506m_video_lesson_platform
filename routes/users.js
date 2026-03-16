@@ -50,7 +50,7 @@ router.post(
 
       // Audit log
       safeAuditLog(req, {
-        event_type: req.user.id === user.id ? 'user_update_profile' : 'admin_update_user',
+        event_type: req.user.id === user.id ? 'user_profile_updated' : 'admin_user_updated',
         severity: 'info',
         actor_user_id: req.user.id,
         message: `Profile updated`,
@@ -88,11 +88,11 @@ router.post('/:id(\\d+)/activate', loadUser('id'), authorize(ABILITIES.USER_ACTI
   try {
     const userToActivate = req.resource.user;
 
-    usersRepo.updateUser(userToActivate.id, { is_active: false });
+    usersRepo.updateUser(userToActivate.id, { is_active: true });
 
     safeAuditLog(req, {
       event_type: 'admin_activate_user',
-      severity: 'warn',
+      severity: 'info',
       actor_user_id: req.user.id,
       message: `User ${userToActivate.id} activated`,
       metadata: { userId: userToActivate.id },
