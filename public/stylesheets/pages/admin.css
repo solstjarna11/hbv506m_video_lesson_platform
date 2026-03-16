@@ -93,3 +93,21 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+.log-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.log-selector form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.log-output {
+  overflow-x: auto;
+}
