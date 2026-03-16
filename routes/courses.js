@@ -50,9 +50,9 @@ router.get('/new',
   }
 });
 
-// GET /courses/:id/edit - show edit form
-// Must be before /:id route! 
-router.get('/:id/edit', 
+// GET /courses/:id(\\d+)/edit - show edit form
+// Must be before /:id(\\d+) route! 
+router.get('/:id(\\d+)/edit', 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   authorize(ABILITIES.COURSE_EDIT), // only users with course:edit on this course can access
   function (req, res, next) {
@@ -75,9 +75,9 @@ router.get('/:id/edit',
 });
 
 
-// GET /courses/:id - course detail page (with lessons). 
+// GET /courses/:id(\\d+) - course detail page (with lessons). 
 // Must be after /new route!
-router.get('/:id', 
+router.get('/:id(\\d+)', 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   loadEnrollmentFromCourse(),
   authorize(ABILITIES.COURSE_VIEW), // only users with course:view on this course can access  
@@ -141,8 +141,8 @@ router.post('/',
 });
 
 
-// POST /courses/:id - update course
-router.post('/:id', 
+// POST /courses/:id(\\d+) - update course
+router.post('/:id(\\d+)', 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   authorize(ABILITIES.COURSE_EDIT), // only users with course:edit on this course can access
   function (req, res, next) {
@@ -179,9 +179,9 @@ router.post('/:id',
 });
 
 
-// POST /courses/:id/publish-toggle - publish/unpublish
+// POST /courses/:id(\\d+)/publish-toggle - publish/unpublish
 router.post(
-  '/:id/publish-toggle',
+  '/:id(\\d+)/publish-toggle',
   loadCourse('id'),
   authorize(ABILITIES.COURSE_PUBLISH),
   (req, res, next) => {
@@ -206,8 +206,8 @@ router.post(
   }
 );
 
-// POST /courses/:id/delete - delete course
-router.post('/:id/delete', 
+// POST /courses/:id(\\d+)/delete - delete course
+router.post('/:id(\\d+)/delete', 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   authorize(ABILITIES.COURSE_DELETE), // only users with course:delete on this course can access
   function (req, res, next) {
@@ -234,9 +234,9 @@ router.post('/:id/delete',
 
 
 
-// POST /courses/:id/enroll
+// POST /courses/:id(\\d+)/enroll
 router.post(
-  '/:id/enroll',
+  '/:id(\\d+)/enroll',
   loadCourse('id'),
   loadEnrollmentFromCourse(),
   authorize(ABILITIES.COURSE_ENROLL),
@@ -259,9 +259,9 @@ router.post(
   }
 );
 
-// POST /courses/:id/unenroll
+// POST /courses/:id(\\d+)/unenroll
 router.post(
-  '/:id/unenroll',
+  '/:id(\\d+)/unenroll',
   loadCourse('id'),
   loadEnrollmentFromCourse(),
   authorize(ABILITIES.COURSE_UNENROLL),
