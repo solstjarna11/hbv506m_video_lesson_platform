@@ -1,5 +1,5 @@
 const rateLimit = require("express-rate-limit");
-const { rateLimitAuditLogger } = require("./logging/rateLimitAuditLogger");
+const { rateLimitHandler } = require("./logging/rateLimitHandler");
 
 module.exports = rateLimit({
   windowMs: 60 * 60 * 1000, // rate limit lasts for 1 hour
@@ -7,7 +7,7 @@ module.exports = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many attempts. Please try again later.",
-  handler: rateLimitAuditLogger({
+  handler: rateLimitHandler({
     eventType: "register_rate_limited",
     message: "Registration rate limit exceeded",
     metadata: {
@@ -15,5 +15,14 @@ module.exports = rateLimit({
       maxAttempts: 5,
       flow: "register",
     },
+    view: "auth/register",
+    viewData: (req) => ({
+      title: "Register",
+      pageCss: "/stylesheets/pages/register.css",
+      form: {
+        email: req.body?.email || "",
+        display_name: req.body?.display_name || "",
+      },
+    }),
   }),
 });
