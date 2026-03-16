@@ -4,6 +4,7 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const { formatAccessLog } = require('./utils/logging/accessLogFormatter');
 const { accessLogStream } = require("./utils/logging/fileStreams");
 const session = require("express-session");
 const csurf = require("csurf"); // anti csrf middleware
@@ -45,7 +46,7 @@ function createApp({ sessionStore } = {}) {
   // --------------------------
   // Logging
   // --------------------------
-  app.use(logger("combined", { stream: accessLogStream }));
+  app.use(logger(formatAccessLog, { stream: accessLogStream }));
 
   if (process.env.NODE_ENV !== "test") {
     app.use(logger("dev"));

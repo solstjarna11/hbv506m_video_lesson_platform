@@ -4,8 +4,7 @@ var router = express.Router();
 const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const { accessLogPath } = require('../utils/logging/fileStreams');
-
+const { accessLogPath } = require("../utils/logging/fileStreams");
 
 const auditLogsRepo = require("../db/auditLogsRepo");
 const { safeAuditLog } = require("../utils/auditLogger");
@@ -13,6 +12,26 @@ const { authorize } = require("../utils/authz/authorize");
 const ABILITIES = require("../utils/authz/abilities");
 const usersRepo = require("../db/usersRepo");
 const { loadUser } = require("../utils/authz/loaders");
+
+function sanitizeQueryString(value, maxLength = 100) {
+  if (typeof value !== "string") return "";
+
+  return value
+    .trim()
+    .replace(/[\r\n\t]+/g, " ")
+    .slice(0, maxLength);
+}
+
+function sanitizeQueryInt(value, fallback = null, min = 0, max = 1000) {
+  const parsed = parseInt(value, 10);
+
+  if (!Number.isFinite(parsed)) return fallback;
+
+  if (parsed < min) return min;
+  if (parsed > max) return max;
+
+  return parsed;
+}
 
 function tailFile(filePath, maxLines = 100) {
   if (!fs.existsSync(filePath)) return null;
@@ -40,17 +59,22 @@ router.get(
 
     // dynamic query search filters
     const filters = {
-      severity: req.query.severity || "",
-      event_type: req.query.event_type || "",
-      actor_user_id: Number.isFinite(parseInt(req.query.actor_user_id, 10))
-        ? parseInt(req.query.actor_user_id, 10)
-        : null,
-      q: req.query.q || "",
-      from: req.query.from || "",
-      to: req.query.to || "",
-      limit: Number.isFinite(parseInt(req.query.limit, 10))
-        ? parseInt(req.query.limit, 10)
-        : 50,
+      severity: sanitizeQueryString(req.query.severity, 30),
+      event_type: sanitizeQueryString(req.query.event_type, 50),
+
+      actor_user_id: sanitizeQueryInt(
+        req.query.actor_user_id,
+        null,
+        1,
+        1000000,
+      ),
+
+      q: sanitizeQueryString(req.query.q, 100),
+
+      from: sanitizeQueryString(req.query.from, 30),
+      to: sanitizeQueryString(req.query.to, 30),
+
+      limit: sanitizeQueryInt(req.query.limit, 50, 1, 200),
     };
     try {
       latestLogs = auditLogsRepo.searchLogs(filters);
