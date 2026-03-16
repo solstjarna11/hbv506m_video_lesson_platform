@@ -1,11 +1,9 @@
 var express = require("express");
 var router = express.Router();
-const os = require('os');
 const { exec } = require("child_process");
 const fs = require("fs");
-const path = require("path");
-const { accessLogPath } = require("../utils/logging/fileStreams");
-
+const { accessLogPath, errorLogPath } = require("../utils/logging/fileStreams");
+const { badRequestError, notFoundError } = require("../utils/errors/httpErrors");
 const auditLogsRepo = require("../db/auditLogsRepo");
 const { safeAuditLog } = require("../utils/auditLogger");
 const { authorize } = require("../utils/authz/authorize");
@@ -13,6 +11,7 @@ const ABILITIES = require("../utils/authz/abilities");
 const usersRepo = require("../db/usersRepo");
 const { loadUser } = require("../utils/authz/loaders");
 
+// Helpers
 function sanitizeQueryString(value, maxLength = 100) {
   if (typeof value !== "string") return "";
 
@@ -31,6 +30,16 @@ function sanitizeQueryInt(value, fallback = null, min = 0, max = 1000) {
   if (parsed > max) return max;
 
   return parsed;
+}
+
+function resolveLogPath(logType) {
+  switch (logType) {
+    case "error":
+      return { logType: "error", logPath: errorLogPath };
+    case "access":
+    default:
+      return { logType: "access", logPath: accessLogPath };
+  }
 }
 
 function tailFile(filePath, maxLines = 100, maxBytes = 64 * 1024) {
@@ -69,40 +78,29 @@ router.get(
       message: "Admin monitoring page accessed",
     });
 
-    // Latest audit logs from DB
     let latestLogs = [];
 
-    // dynamic query search filters
     const filters = {
       severity: sanitizeQueryString(req.query.severity, 30),
       event_type: sanitizeQueryString(req.query.event_type, 50),
-
-      actor_user_id: sanitizeQueryInt(
-        req.query.actor_user_id,
-        null,
-        1,
-        1000000,
-      ),
-
+      actor_user_id: sanitizeQueryInt(req.query.actor_user_id, null, 1, 1000000),
       q: sanitizeQueryString(req.query.q, 100),
-
       from: sanitizeQueryString(req.query.from, 30),
       to: sanitizeQueryString(req.query.to, 30),
-
       limit: sanitizeQueryInt(req.query.limit, 50, 1, 200),
     };
+
     try {
       latestLogs = auditLogsRepo.searchLogs(filters);
     } catch (e) {
-      // If DB logging isn't used yet, don't crash the page
       latestLogs = [];
     }
 
-    // Tail file log (optional)
-    const logPath = accessLogPath;
-    const fileLogTail = tailFile(logPath, 120);
+    const requestedLogType = sanitizeQueryString(req.query.log_type, 20);
+    const { logType, logPath } = resolveLogPath(requestedLogType);
 
-    // OS Uptime command
+    const fileLogTail = tailFile(logPath, 120, 64 * 1024);
+
     exec("uptime", { timeout: 1500 }, (err, stdout, stderr) => {
       if (err) {
         return next(err);
@@ -115,6 +113,7 @@ router.get(
         latestLogs,
         fileLogTail,
         logPath,
+        logType,
         filters,
       });
     });
@@ -127,13 +126,28 @@ router.get(
   function (req, res, next) {
     try {
       const userId = parseInt(req.query.id, 10);
-      if (!Number.isFinite(userId))
-        return res.status(400).send("Invalid user ID");
+
+      if (!Number.isFinite(userId)) {
+        return next(
+          badRequestError("The request was invalid.", {
+            reason: "invalid_user_id",
+            providedValue: req.query.id,
+          })
+        );
+      }
 
       const userFound = usersRepo.getUserById(userId);
-      if (!userFound) return res.status(404).send("User not found");
 
-      res.redirect(`/users/${userId}`);
+      if (!userFound) {
+        return next(
+          notFoundError("The requested user was not found.", {
+            resourceType: "user",
+            resourceId: userId,
+          })
+        );
+      }
+
+      return res.redirect(`/users/${userId}`);
     } catch (err) {
       next(err);
     }
