@@ -7,6 +7,13 @@ const registerRateLimit = require("../utils/registerRateLimit");
 const { safeAuditLog } = require("../utils/auditLogger");
 const AppError = require("../utils/errors/AppError");
 
+// helper
+function getSafeErrorMessage(err) {
+  return typeof err?.message === "string" && err.message.trim()
+    ? err.message
+    : "The request could not be completed.";
+}
+
 /* GET register page. */
 router.get("/register", function (req, res, next) {
   res.render("auth/register", {
@@ -78,6 +85,8 @@ router.post(
       });
     } catch (err) {
       const registerAttemptEmail = req.body.email;
+      const safeMessage = getSafeErrorMessage(err);
+
       safeAuditLog(req, {
         event_type: "register_failure",
         severity: "warn",
@@ -88,7 +97,7 @@ router.post(
       return res.status(400).render("auth/register", {
         title: "Register",
         pageCss: "/stylesheets/pages/register.css",
-        errors: [err.message],
+        errors: [safeMessage],
         form: {
           email: req.body.email || "",
           display_name: req.body.display_name || "",
@@ -133,19 +142,21 @@ router.post("/login", loginRateLimit, async (req, res, next) => {
     });
   } catch (err) {
     const loginAttemptEmail = req.body.email;
+    const isLockedError =
+      err.message === "Account temporarily locked. Try again later.";
+    const safeMessage = getSafeErrorMessage(err);
+
     safeAuditLog(req, {
-      event_type: err.message.includes("locked")
-        ? "account_locked"
-        : "login_failure",
+      event_type: isLockedError ? "account_locked" : "login_failure",
       severity: "warn",
       actor_user_id: null,
-      message: `Login attempt for ${loginAttemptEmail} failed: ${err.message}`,
+      message: `Login attempt for ${loginAttemptEmail} failed: ${safeMessage}`,
     });
 
     return res.status(400).render("auth/login", {
       title: "Login",
       pageCss: "/stylesheets/pages/register.css",
-      errors: [err.message],
+      errors: [safeMessage],
       form: { email: req.body.email || "" },
     });
   }
