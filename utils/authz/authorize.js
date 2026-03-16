@@ -1,5 +1,7 @@
 // utils/authz/authorize.js
 
+const { forbiddenError } = require('../errors/httpErrors');
+
 const adminPolicy = require('../policies/adminPolicy');
 const coursePolicy = require('../policies/coursePolicy');
 const lessonPolicy = require('../policies/lessonPolicy');
@@ -9,16 +11,26 @@ const { safeAuditLog } = require('../auditLogger');
 
 const ABILITIES = require('./abilities');
 
-function forbidden(req, res, ability) {
+function forbidden(req, res, next, ability) {
   safeAuditLog(req, {
     event_type: 'access_denied',
     severity: 'warn',
     actor_user_id: req.user?.id ?? null,
     message: `Access denied: ${ability}`,
-    metadata: { path: req.path, method: req.method }
+    metadata: {
+      path: req.originalUrl,
+      method: req.method,
+      ability,
+    },
   });
 
-  return res.status(403).send('Forbidden');
+  return next(
+    forbiddenError('You are not allowed to perform that action.', {
+      ability,
+      path: req.originalUrl,
+      method: req.method,
+    })
+  );
 }
 
 /**
@@ -44,7 +56,7 @@ function authorize(ability) {
         break;
       // Courses
       case ABILITIES.COURSE_VIEW:
-        if (!course) return forbidden(req, res, ability);
+        if (!course) return forbidden(req, res, next, ability);
         allowed = coursePolicy.canView(user, course);
         break;
 
@@ -53,22 +65,22 @@ function authorize(ability) {
         break;
 
       case ABILITIES.COURSE_EDIT:
-        if (!course) return forbidden(req, res, ability);
+        if (!course) return forbidden(req, res, next, ability);
         allowed = coursePolicy.canEdit(user, course);
         break;
 
       case ABILITIES.COURSE_DELETE:
-        if (!course) return forbidden(req, res, ability);
+        if (!course) return forbidden(req, res, next, ability);
         allowed = coursePolicy.canDelete(user, course);
         break;
 
       case ABILITIES.COURSE_PUBLISH:
-        if (!course) return forbidden(req, res, ability);
+        if (!course) return forbidden(req, res, next, ability);
         allowed = coursePolicy.canPublish(user, course);
         break;
 
       case ABILITIES.COURSE_ENROLL: {
-        if (!course) return forbidden(req, res, ability);
+        if (!course) return forbidden(req, res, next, ability);
         // enrollment is optional; if loader ran it will be there
         allowed = coursePolicy.canEnroll(user, course, enrollment);
         break;
@@ -88,7 +100,7 @@ function authorize(ability) {
 
       // Add more as we complete TODOs
       case ABILITIES.LESSON_CREATE:
-        if (!course) return forbidden(req, res, ability);
+        if (!course) return forbidden(req, res, next, ability);
         allowed = lessonPolicy.canCreate(user, course);
         break;
 
@@ -103,7 +115,7 @@ function authorize(ability) {
         break;
 
       case ABILITIES.LESSON_LIST:
-        if (!course) return forbidden(req, res, ability);
+        if (!course) return forbidden(req, res, next, ability);
         // Listing is essentially "can view lessons in this course"
         allowed =
           (user?.is_active &&
@@ -141,7 +153,7 @@ function authorize(ability) {
         allowed = false;
     }
 
-    if (!allowed) return forbidden(req, res, ability);
+    if (!allowed) return forbidden(req, res, next, ability);
     return next();
   };
 }
