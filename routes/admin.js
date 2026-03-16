@@ -35,8 +35,23 @@ router.get(
 
     // Latest audit logs from DB
     let latestLogs = [];
+
+    // dynamic query search filters
+    const filters = {
+      severity: req.query.severity || '',
+      event_type: req.query.event_type || '',
+      actor_user_id: Number.isFinite(parseInt(req.query.actor_user_id, 10))
+        ? parseInt(req.query.actor_user_id, 10)
+        : null,
+      q: req.query.q || '',
+      from: req.query.from || '',
+      to: req.query.to || '',
+      limit: Number.isFinite(parseInt(req.query.limit, 10))
+        ? parseInt(req.query.limit, 10)
+        : 50,
+    };
     try {
-      latestLogs = auditLogsRepo.getLatestLogs({ limit: 50 });
+      latestLogs = auditLogsRepo.searchLogs(filters);
     } catch (e) {
       // If DB logging isn't used yet, don't crash the page
       latestLogs = [];
@@ -57,6 +72,7 @@ router.get(
         latestLogs,
         fileLogTail,
         logPath,
+        filters,
       });
     });
   }
