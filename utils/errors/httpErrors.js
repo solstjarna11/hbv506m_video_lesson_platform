@@ -1,3 +1,5 @@
+// helper constructors for common errors
+
 const AppError = require('./AppError');
 
 function forbiddenError(publicMessage = 'You are not allowed to access this resource.', metadata = {}) {
