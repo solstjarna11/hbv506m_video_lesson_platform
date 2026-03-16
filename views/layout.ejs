@@ -11,7 +11,7 @@
   <% } %>
 </head>
 <body>
-  <% if (user) { %>
+  <% if (typeof user !== 'undefined' && user) { %>
     <header class="site-header">
       <div class="header-inner">
         <a href="/" class="header-company-name">

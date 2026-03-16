@@ -81,6 +81,12 @@ function createApp({ sessionStore } = {}) {
 
   app.use(session(sessionOptions));
 
+  // make user available to all views through res.locals
+  app.use((req, res, next) => {
+    res.locals.user = req.user || null;
+    next();
+  });
+
   // anti csrf middlware
   const csrfProtection = csurf();
   app.use(csrfProtection);
