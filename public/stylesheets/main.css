@@ -214,8 +214,11 @@ p {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  background: #eee;
-  color: #333;
+  background: #f3f4f6;
+  color: #555;
+  border: 1px solid #e5e7eb;
+  pointer-events: none;
+  user-select: none;
 }
 
 @media (max-width: 900px) {
@@ -287,10 +290,10 @@ p {
   top: calc(100% + 8px);
   right: 0;
   min-width: 190px;
-  background: #1e1e2e;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: #fff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
   overflow: hidden;
   z-index: 1000;
   animation: dropdownIn 0.15s ease;
@@ -304,16 +307,16 @@ p {
 }
 .dropdown-header {
   padding: 0.85rem 1rem 0.65rem;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  border-bottom: 1px solid #e5e7eb;
 }
 .dropdown-header-name {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #fff;
+  color: #222;
 }
 .dropdown-header-role {
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.4);
+  color: #888;
   text-transform: capitalize;
   margin-top: 1px;
 }
@@ -323,7 +326,7 @@ p {
   gap: 0.65rem;
   padding: 0.7rem 1rem;
   font-size: 0.875rem;
-  color: rgba(255,255,255,0.75);
+  color: #444;
   text-decoration: none;
   transition: background 0.12s ease, color 0.12s ease;
   cursor: pointer;
@@ -333,8 +336,8 @@ p {
   text-align: left;
 }
 .dropdown-item:hover {
-  background: rgba(255,255,255,0.07);
-  color: #fff;
+  background: #f3f4f6;
+  color: #000;
 }
 .dropdown-item svg {
   flex-shrink: 0;
@@ -345,15 +348,15 @@ p {
 }
 .dropdown-divider {
   height: 1px;
-  background: rgba(255,255,255,0.07);
+  background: #e5e7eb;
   margin: 0.25rem 0;
 }
 .dropdown-item.danger {
-  color: rgba(255, 100, 100, 0.8);
+  color: #b91c1c;
 }
 .dropdown-item.danger:hover {
-  background: rgba(255, 80, 80, 0.1);
-  color: #ff6464;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 /* ── Form fields ── */
@@ -441,4 +444,108 @@ select.form-input {
 
 .btn:hover {
   opacity: 0.88;
+}
+
+/* ── Lesson card ── */
+.lesson-card {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.lesson-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.lesson-card-main {
+  display: block;
+  padding: 1rem 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 10px 10px 0 0;
+  transition: background 0.12s ease;
+}
+
+.lesson-card-main:hover {
+  background: #f9fafb;
+  text-decoration: none;
+}
+
+/* When there are no action buttons, round all corners */
+.lesson-card:not(:has(.lesson-card-actions)) .lesson-card-main {
+  border-radius: 10px;
+}
+
+.lesson-card-actions {
+  display: flex;
+  border-top: 1px solid #e5e7eb;
+}
+
+.lesson-action-edit,
+.lesson-action-delete,
+.lesson-action-delete-form {
+  flex: 1;
+  display: flex;
+}
+
+.lesson-action-edit {
+  padding: 0.6rem 1rem;
+  text-align: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #166534;
+  background: #dcfce7;
+  border-radius: 0 0 0 10px;
+  transition: background 0.12s ease;
+  border-right: 1px solid #e5e7eb;
+}
+
+.lesson-action-edit:hover {
+  background: #bbf7d0;
+  text-decoration: none;
+}
+
+.lesson-action-delete-form {
+  flex: 1;
+  margin: 0;
+  display: flex;
+}
+
+.lesson-action-delete {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  text-align: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 0 0 10px 0;
+  transition: background 0.12s ease;
+}
+
+.lesson-action-delete:hover {
+  background: #fecaca;
+}
+
+.course-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #888;
+  margin: 1rem 0 0.25rem 0;
 }

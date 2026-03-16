@@ -143,7 +143,7 @@ router.post(
         metadata: { course_id: course.id, lesson_id: newID, title },
       });
 
-      res.redirect(`/lessons?course_id=${course.id}`);
+      res.redirect(`/courses/${course.id}`);
     } catch (err) {
       next(err);
     }
@@ -241,7 +241,7 @@ router.post(
 
       if (!isSafeUrl(video_url)) {
         res.locals.pageCss = '/stylesheets/pages/courses.css';
-        return res.status(400).render('lessons/new', {
+        return res.status(400).render('lessons/edit', {
           course,
           lesson,
           form: {
@@ -271,7 +271,7 @@ router.post(
         metadata: { lesson_id: lesson.id, course_id: course.id, title },
       });
 
-      res.redirect(`/lessons?course_id=${course.id}`);
+      res.redirect(`/courses/${course.id}`);
     } catch (err) {
       next(err);
     }
@@ -301,7 +301,7 @@ router.post(
         metadata: { lesson_id: lesson.id, course_id: course.id, title: lesson.title },
       });
 
-      res.redirect(`/lessons?course_id=${course.id}`);
+      res.redirect(`/courses/${course.id}`);
     } catch (err) {
       next(err);
     }

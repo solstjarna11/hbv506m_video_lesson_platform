@@ -3,50 +3,44 @@
 
   <header class="page-header">
     <div class="page-header-content">
-      <div class="card-row" style="align-items:center; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
         <h1 style="margin:0;"><%= course.title %></h1>
         <span class="badge"><%= course.is_published ? 'Published' : 'Draft' %></span>
       </div>
-
+      <p class="section-label">Description</p>
       <p class="muted"><%= course.description %></p>
     </div>
-
-    <div class="header-actions">
-      <% if (typeof canPublishCourse !== 'undefined' && canPublishCourse) { %>
-        <form method="POST"
-              action="/courses/<%= course.id %>/publish-toggle"
-              class="inline-form">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button class="<%= course.is_published ? 'btn-danger' : 'btn' %>" type="submit">
-            <%= course.is_published ? 'Unpublish' : 'Publish' %>
-          </button>
-        </form>
-      <% } %>
-
-      <% if (canEditCourse) { %>
-        <a class="btn-secondary" href="/courses/<%= course.id %>/edit">Edit Course</a>
-      <% } %>
-
-      <% if (canCreateLesson) { %>
-        <a class="btn" href="/lessons/new?course_id=<%= course.id %>">+ New Lesson</a>
-      <% } %>
-    </div>
-
-    <% if (canEnroll) { %>
-      <form method="POST" action="/courses/<%= course.id %>/enroll" class="inline-form">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button class="btn" type="submit">Enroll</button>
-      </form>
-    <% } %>
-
-    <% if (canUnenroll) { %>
-      <form method="POST" action="/courses/<%= course.id %>/unenroll" class="inline-form"
-            onsubmit="return confirm('Unenroll from this course?');">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button class="btn-danger" type="submit">Unenroll</button>
-      </form>
-    <% } %>
   </header>
+
+  <div class="course-actions">
+    <% if (typeof canPublishCourse !== 'undefined' && canPublishCourse) { %>
+    <form method="POST" action="/courses/<%= course.id %>/publish-toggle" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="<%= course.is_published ? 'btn-danger' : 'btn' %>" type="submit">
+        <%= course.is_published ? 'Unpublish' : 'Publish' %>
+      </button>
+    </form>
+    <% } %>
+    <% if (canEditCourse) { %>
+      <a class="btn-secondary" href="/courses/<%= course.id %>/edit">Edit Course</a>
+    <% } %>
+    <% if (canCreateLesson) { %>
+      <a class="btn" href="/lessons/new?course_id=<%= course.id %>">+ New Lesson</a>
+    <% } %>
+    <% if (canEnroll) { %>
+    <form method="POST" action="/courses/<%= course.id %>/enroll" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn" type="submit">Enroll</button>
+    </form>
+    <% } %>
+    <% if (canUnenroll) { %>
+    <form method="POST" action="/courses/<%= course.id %>/unenroll" class="inline-form"
+      onsubmit="return confirm('Unenroll from this course?');">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn-danger" type="submit">Unenroll</button>
+    </form>
+    <% } %>
+  </div>
 
   <h2>Lessons</h2>
 
@@ -55,36 +49,30 @@
   <% } else { %>
     <ul class="card-list">
       <% lessons.forEach(lesson => { %>
-        <li class="card">
-          <div class="card-row">
-            <h3 class="card-title" style="margin:0;">
-              <a class="link" href="/lessons/<%= lesson.id %>"><%= lesson.title %></a>
-            </h3>
-            <span class="badge"><%= lesson.is_published ? 'Published' : 'Draft' %></span>
-          </div>
-
-          <% if (lesson.description) { %>
-            <p class="card-desc"><%= lesson.description %></p>
-          <% } %>
-
-          <div class="card-meta">
-            <span>Position: <%= lesson.position %></span>
-            <span>ID: <%= lesson.id %></span>
-          </div>
-
-          <div class="card-actions">
-            <a class="btn-secondary" href="/lessons/<%= lesson.id %>">View</a>
-
-            <% if (canEditCourse) { %>
-              <a class="btn-secondary" href="/lessons/<%= lesson.id %>/edit">Edit</a>
-
-              <form method="POST" action="/lessons/<%= lesson.id %>/delete" class="inline-form"
-                    onsubmit="return confirm('Delete this lesson?');">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button class="btn-danger" type="submit">Delete</button>
-              </form>
+        <li class="card-course lesson-card">
+          <a class="lesson-card-main" href="/lessons/<%= lesson.id %>">
+            <div class="card-row">
+              <h3 class="card-title" style="margin:0;"><%= lesson.title %></h3>
+              <span class="badge"><%= lesson.is_published ? 'Published' : 'Draft' %></span>
+            </div>
+            <% if (lesson.description) { %>
+              <p class="card-desc"><%= lesson.description %></p>
             <% } %>
+            <div class="card-meta">
+              <span>Position: <%= lesson.position %></span>
+              <span>ID: <%= lesson.id %></span>
+            </div>
+          </a>
+          <% if (canEditCourse) { %>
+          <div class="lesson-card-actions">
+            <a class="lesson-action-edit" href="/lessons/<%= lesson.id %>/edit">Edit</a>
+            <form method="POST" action="/lessons/<%= lesson.id %>/delete" class="lesson-action-delete-form"
+              onsubmit="return confirm('Delete this lesson?');">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="lesson-action-delete" type="submit">Delete</button>
+            </form>
           </div>
+          <% } %>
         </li>
       <% }) %>
     </ul>
