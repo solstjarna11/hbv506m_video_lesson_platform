@@ -1,11 +1,21 @@
-const result = require('dotenv').config({ path: '/etc/video-lesson-platform/env'});
 const Database = require('better-sqlite3'); // SQLite library, synchronous and fast.
 const path = require('path'); // For handling file paths
 const fs = require('fs'); // File system module
+const dotenv = require('dotenv');
+
+const prodEnvPath = '/etc/video-lesson-platform/env'; // production env file path
+const localEnvPath = path.resolve(__dirname, '..', '.env'); // local development .env file path
+
+const envPath = fs.existsSync(prodEnvPath) ? prodEnvPath : localEnvPath;
+
+const result = dotenv.config({ path: envPath });
+
 if (result.error) {
-  console.error("Dotenv Error:", result.error);
+  console.warn('⚠️  Could not load env file:', envPath);
+} else {
+  console.log('Loaded environment variables from:', envPath);
 }
-console.log('result: ', result);
+
 console.log('process.env.DB_PATH: ', process.env.DB_PATH);
 const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'data', 'app.db'); // Path to the SQLite database file
 console.log('dbPath: ', dbPath);

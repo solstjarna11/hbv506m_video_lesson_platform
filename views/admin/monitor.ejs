@@ -16,6 +16,82 @@
   </section>
 
   <section class="panel">
+    <h2>Audit Log Filters</h2>
+    <form method="GET" action="/admin/monitor" class="monitor-filters">
+      <div>
+        <label for="severity">Severity</label>
+        <select id="severity" name="severity">
+          <option value="">All</option>
+          <option value="debug" <%= filters?.severity === 'debug' ? 'selected' : '' %>>debug</option>
+          <option value="info" <%= filters?.severity === 'info' ? 'selected' : '' %>>info</option>
+          <option value="warn" <%= filters?.severity === 'warn' ? 'selected' : '' %>>warn</option>
+          <option value="error" <%= filters?.severity === 'error' ? 'selected' : '' %>>error</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="event_type">Event Type</label>
+        <input
+          id="event_type"
+          type="text"
+          name="event_type"
+          value="<%= filters?.event_type || '' %>"
+          placeholder="e.g. access_denied"
+        >
+      </div>
+
+      <div>
+        <label for="actor_user_id">Actor User ID</label>
+        <input
+          id="actor_user_id"
+          type="number"
+          name="actor_user_id"
+          min="1"
+          value="<%= filters?.actor_user_id || '' %>"
+        >
+      </div>
+
+      <div>
+        <label for="q">Search text</label>
+        <input
+          id="q"
+          type="text"
+          name="q"
+          value="<%= filters?.q || '' %>"
+          placeholder="message, IP, or user agent"
+        >
+      </div>
+
+      <div>
+        <label for="from">From</label>
+        <input id="from" type="datetime-local" name="from" value="<%= filters?.from || '' %>">
+      </div>
+
+      <div>
+        <label for="to">To</label>
+        <input id="to" type="datetime-local" name="to" value="<%= filters?.to || '' %>">
+      </div>
+
+      <div>
+        <label for="limit">Limit</label>
+        <input
+          id="limit"
+          type="number"
+          name="limit"
+          min="1"
+          max="500"
+          value="<%= filters?.limit || 50 %>"
+        >
+      </div>
+
+      <div class="filter-actions">
+        <button type="submit">Apply Filters</button>
+        <a href="/admin/monitor">Reset</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
     <h2>Server Uptime</h2>
     <pre class="pre"><%= uptimeOutput %></pre>
   </section>
