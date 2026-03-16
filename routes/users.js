@@ -13,12 +13,13 @@ router.get(
   authorize(ABILITIES.USER_VIEW),
   function (req, res, next) {
     try {
-      const user = req.resource.user;
+      const profileUser = req.resource.user;
 
       res.render('users/profile', {
-        user,
+        profileUser,
         adminView: req.user.role === 'admin', // optionally show admin controls
         csrfToken: req.csrfToken(),
+        currentUser: req.user,
       });
     } catch (err) {
       next(err);

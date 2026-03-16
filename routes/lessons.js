@@ -20,6 +20,16 @@ const { safeAuditLog } = require('../utils/auditLogger');
 const coursePolicy = require('../utils/policies/coursePolicy'); // for includeUnpublished decision
 const lessonPolicy = require('../utils/policies/lessonPolicy');
 
+function isSafeUrl(value) {
+  if (!value) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:'; 
+  } catch {
+    return false;
+  }
+}
+
 // --------------------------------------
 // GET /lessons?course_id=1  (list lessons for a course)
 // --------------------------------------
@@ -101,6 +111,21 @@ router.post(
         });
       }
 
+      if (!isSafeUrl(video_url)) {
+        res.locals.pageCss = '/stylesheets/pages/courses.css';
+        return res.status(400).render('lessons/new', {
+          course,
+          form: {
+            title,
+            description: description || '',
+            video_url: video_url || '',
+            position: Number.isFinite(position) ? position : 0,
+            is_published,
+          },
+          error: 'Video URL invalid (https only).',
+        });
+      }
+
       const newID = lessonsRepo.createLesson({
         course_id: course.id,
         title,
@@ -118,7 +143,7 @@ router.post(
         metadata: { course_id: course.id, lesson_id: newID, title },
       });
 
-      res.redirect(`/lessons?course_id=${course.id}`);
+      res.redirect(`/courses/${course.id}`);
     } catch (err) {
       next(err);
     }
@@ -214,6 +239,22 @@ router.post(
         });
       }
 
+      if (!isSafeUrl(video_url)) {
+        res.locals.pageCss = '/stylesheets/pages/courses.css';
+        return res.status(400).render('lessons/edit', {
+          course,
+          lesson,
+          form: {
+            title,
+            description: description || '',
+            video_url: video_url || '',
+            position: Number.isFinite(position) ? position : (lesson.position ?? 0),
+            is_published,
+          },
+          error: 'Video URL invalid (https only).',
+        });
+      }
+
       lessonsRepo.updateLesson(lesson.id, {
         title,
         description,
@@ -230,7 +271,7 @@ router.post(
         metadata: { lesson_id: lesson.id, course_id: course.id, title },
       });
 
-      res.redirect(`/lessons?course_id=${course.id}`);
+      res.redirect(`/courses/${course.id}`);
     } catch (err) {
       next(err);
     }
@@ -260,7 +301,7 @@ router.post(
         metadata: { lesson_id: lesson.id, course_id: course.id, title: lesson.title },
       });
 
-      res.redirect(`/lessons?course_id=${course.id}`);
+      res.redirect(`/courses/${course.id}`);
     } catch (err) {
       next(err);
     }

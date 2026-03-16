@@ -1,39 +1,61 @@
-<h1><%= adminView ? "Admin Edit User" : "My Profile" %></h1>
-
-<p>Account status: 
-    <strong><%= user.is_active ? 'Active' : 'Deactivated' %></strong>
-</p>
-
-<form method="POST" action="/users/<%= user.id %>">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-    <label>Email</label>
-    <input type="email" name="email" value="<%= user.email %>" required />
-
-    <label>Display Name</label>
-    <input type="text" name="display_name" value="<%= user.display_name %>" required />
-
+<div class="card-row" style="align-items: center; gap: 8px;">
+  <h1 style="margin: 0;">
     <% if (adminView) { %>
-        <label>Role</label>
-        <select name="role">
-            <option value="student" <%= user.role === 'student' ? 'selected' : '' %>>Student</option>
-            <option value="instructor" <%= user.role === 'instructor' ? 'selected' : '' %>>Instructor</option>
-            <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
-        </select>
+      <%= profileUser.display_name %>
+    <% } else { %>
+      My Profile
     <% } %>
+  </h1>
+  <span class="badge"><%= profileUser.is_active ? 'Active' : 'Deactivated' %></span>
+  <% if (adminView) { %>
+    <span class="badge"><%= profileUser.role %></span>
+  <% } %>
+</div>
 
-    <button type="submit">Save</button>
+<form method="POST" action="/users/<%= profileUser.id %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+  <div class="form-field">
+    <label class="form-label">Email</label>
+    <input class="form-input" type="email" name="email" value="<%= profileUser.email %>" required />
+  </div>
+
+  <div class="form-field">
+    <label class="form-label">Display Name</label>
+    <input class="form-input" type="text" name="display_name" value="<%= profileUser.display_name %>" required />
+  </div>
+
+  <% if (adminView && currentUser.id !== profileUser.id) { %>
+  <div class="form-field">
+    <label class="form-label">Role</label>
+    <select class="form-input" name="role">
+      <option value="student"    <%= profileUser.role === 'student'    ? 'selected' : '' %>>Student</option>
+      <option value="instructor" <%= profileUser.role === 'instructor' ? 'selected' : '' %>>Instructor</option>
+      <option value="admin"      <%= profileUser.role === 'admin'      ? 'selected' : '' %>>Admin</option>
+    </select>
+  </div>
+  <% } %>
+
+  <button class="btn" type="submit">Save Changes</button>
 </form>
 
-<form method="POST" action="/users/<%= user.id %>/deactivate" style="margin-top:1em;">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-    <button type="submit" onclick="return confirm('Are you sure you want to deactivate this user?');">
-    Deactivate User
-    </button>
-</form>
-
-<form method="POST" action="/users/<%= user.id %>/activate" style="margin-top:1em;">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-    <button type="submit" onclick="return confirm('Are you sure you want to activate this user?');">
-    Activate User
-    </button>
-</form>
+<% if (adminView && currentUser.id !== profileUser.id) { %>
+    <div class="card" style="max-width: 520px; margin-top: 1rem;">
+        <p class="muted" style="margin: 0 0 0.75rem;">Change account status</p>
+        <div class="card-actions">
+            <% if (profileUser.is_active) { %>
+            <form method="POST" action="/users/<%= profileUser.id %>/deactivate" class="inline-form"
+                onsubmit="return confirm('Are you sure you want to deactivate this user?');">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <button class="btn-danger" type="submit">Deactivate User</button>
+            </form>
+            <% } else { %>
+            <form method="POST" action="/users/<%= profileUser.id %>/activate" class="inline-form"
+                onsubmit="return confirm('Are you sure you want to activate this user?');">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <button class="btn" type="submit">Activate User</button>
+            </form>
+            <% } %>
+        </div>
+    </div>
+<% } %>

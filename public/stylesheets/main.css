@@ -214,8 +214,11 @@ p {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  background: #eee;
-  color: #333;
+  background: #f3f4f6;
+  color: #555;
+  border: 1px solid #e5e7eb;
+  pointer-events: none;
+  user-select: none;
 }
 
 @media (max-width: 900px) {
@@ -245,4 +248,304 @@ p {
   .form-row {
     flex-direction: column;
   }
+}
+
+/* ── User dropdown ── */
+.header-user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+.header-user-menu:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.header-user-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: inherit;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header-chevron {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.header-user-menu.open .header-chevron {
+  transform: rotate(180deg);
+}
+.user-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 190px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  overflow: hidden;
+  z-index: 1000;
+  animation: dropdownIn 0.15s ease;
+}
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.header-user-menu.open .user-dropdown {
+  display: block;
+}
+.dropdown-header {
+  padding: 0.85rem 1rem 0.65rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.dropdown-header-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #222;
+}
+.dropdown-header-role {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: capitalize;
+  margin-top: 1px;
+}
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.875rem;
+  color: #444;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+}
+.dropdown-item:hover {
+  background: #f3f4f6;
+  color: #000;
+}
+.dropdown-item svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.dropdown-item:hover svg {
+  opacity: 1;
+}
+.dropdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0.25rem 0;
+}
+.dropdown-item.danger {
+  color: #b91c1c;
+}
+.dropdown-item.danger:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ── Form fields ── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+}
+
+.form-input {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+  appearance: auto;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00B7FF;
+  box-shadow: 0 0 0 3px rgba(0, 183, 255, 0.15);
+}
+
+.form-input:hover:not(:focus) {
+  border-color: #adb5bd;
+}
+
+select.form-input {
+  cursor: pointer;
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 0.85rem 1.3rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  background: #fff;
+  color: #222;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+  text-decoration: none;
+}
+
+.btn-danger {
+  display: inline-block;
+  padding: 0.85rem 1.3rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #fee2e2;
+  color: #b91c1c;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.btn-danger:hover {
+  background: #fecaca;
+}
+
+.btn:hover {
+  opacity: 0.88;
+}
+
+/* ── Lesson card ── */
+.lesson-card {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.lesson-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.lesson-card-main {
+  display: block;
+  padding: 1rem 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 10px 10px 0 0;
+  transition: background 0.12s ease;
+}
+
+.lesson-card-main:hover {
+  background: #f9fafb;
+  text-decoration: none;
+}
+
+/* When there are no action buttons, round all corners */
+.lesson-card:not(:has(.lesson-card-actions)) .lesson-card-main {
+  border-radius: 10px;
+}
+
+.lesson-card-actions {
+  display: flex;
+  border-top: 1px solid #e5e7eb;
+}
+
+.lesson-action-edit,
+.lesson-action-delete,
+.lesson-action-delete-form {
+  flex: 1;
+  display: flex;
+}
+
+.lesson-action-edit {
+  padding: 0.6rem 1rem;
+  text-align: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #166534;
+  background: #dcfce7;
+  border-radius: 0 0 0 10px;
+  transition: background 0.12s ease;
+  border-right: 1px solid #e5e7eb;
+}
+
+.lesson-action-edit:hover {
+  background: #bbf7d0;
+  text-decoration: none;
+}
+
+.lesson-action-delete-form {
+  flex: 1;
+  margin: 0;
+  display: flex;
+}
+
+.lesson-action-delete {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  text-align: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 0 0 10px 0;
+  transition: background 0.12s ease;
+}
+
+.lesson-action-delete:hover {
+  background: #fecaca;
+}
+
+.course-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #888;
+  margin: 1rem 0 0.25rem 0;
 }
