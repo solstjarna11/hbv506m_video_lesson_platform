@@ -32,6 +32,11 @@ function sanitizeString(value, maxLength = MAX_FIELD_LENGTH) {
   if (value == null) return null;
 
   const normalized = String(value)
+    .replace(/%(25)?0d/gi, ' ')
+    .replace(/%(25)?0a/gi, ' ')
+    .replace(/\\r/g, ' ')
+    .replace(/\\n/g, ' ')
+    .replace(/\\t/g, ' ')
     .replace(/[\r\n\t]+/g, ' ')
     .replace(/\0/g, '')
     .replace(/\s{2,}/g, ' ')
