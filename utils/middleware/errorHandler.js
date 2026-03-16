@@ -1,4 +1,5 @@
 const { safeAuditLog } = require('../auditLogger');
+const { writeErrorLog } = require('../logging/writeErrorLog');
 
 function errorHandler(err, req, res, next) {
   if (res.headersSent) {
@@ -13,10 +14,20 @@ function errorHandler(err, req, res, next) {
   const isOperational = Boolean(err.isOperational);
   const eventType = err.eventType || (statusCode >= 500 ? 'server_error' : 'request_error');
   const severity = err.severity || (statusCode >= 500 ? 'error' : 'warn');
+
   const publicMessage =
     statusCode >= 500
       ? 'Something went wrong. Please try again later.'
       : (err.publicMessage || 'The request could not be completed.');
+
+  writeErrorLog(req, err, {
+    statusCode,
+    eventType,
+    metadata: {
+      isOperational,
+      severity,
+    },
+  });
 
   safeAuditLog(req, {
     event_type: eventType,
