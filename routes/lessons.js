@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 // AuthZ
 const { authorize } = require('../utils/authz/authorize');
@@ -93,7 +93,7 @@ router.post(
       const title = (req.body.title || '').trim();
       const description = (req.body.description || '').trim() || null;
       const video_url = (req.body.video_url || '').trim() || null;
-      const position = parseInt(req.body.position, 10);
+      const position = Number.parseInt(req.body.position, 10);
       const is_published = req.body.is_published === '1' ? 1 : 0;
 
       if (!title) {
@@ -154,7 +154,7 @@ router.post(
 // GET /lessons/:id(\\d+) (lesson detail)
 // --------------------------------------
 router.get(
-  '/:id(\\d+)',
+  String.raw`/:id(\d+)`,
   loadLesson('id'),
   loadCourseFromLessonResource(),
   loadEnrollmentFromCourse(),
@@ -176,7 +176,7 @@ router.get(
 // GET /lessons/:id(\\d+)/edit
 // --------------------------------------
 router.get(
-  '/:id(\\d+)/edit',
+  String.raw`/:id(\d+)/edit`,
   loadLesson('id'),
   loadCourseFromLessonResource(),
   authorize(ABILITIES.LESSON_EDIT),
@@ -208,7 +208,7 @@ router.get(
 // POST /lessons/:id(\\d+) (update)
 // --------------------------------------
 router.post(
-  '/:id(\\d+)',
+  String.raw`/:id(\d+)`,
   loadLesson('id'),
   loadCourseFromLessonResource(),
   authorize(ABILITIES.LESSON_EDIT),
@@ -220,7 +220,7 @@ router.post(
       const title = (req.body.title || '').trim();
       const description = (req.body.description || '').trim() || null;
       const video_url = (req.body.video_url || '').trim() || null;
-      const position = parseInt(req.body.position, 10);
+      const position = Number.parseInt(req.body.position, 10);
       const is_published = req.body.is_published === '1' ? 1 : 0;
 
       if (!title) {
@@ -282,7 +282,7 @@ router.post(
 // POST /lessons/:id(\\d+)/delete
 // --------------------------------------
 router.post(
-  '/:id(\\d+)/delete',
+  String.raw`/:id(\d+)/delete`,
   loadLesson('id'),
   loadCourseFromLessonResource(),
   authorize(ABILITIES.LESSON_DELETE),
