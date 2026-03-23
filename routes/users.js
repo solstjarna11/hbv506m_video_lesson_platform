@@ -8,7 +8,7 @@ const { safeAuditLog } = require('../utils/auditLogger');
 
 // GET profile (self or admin view)
 router.get(
-  '/:id(\\d+)', 
+  String.raw`/:id(\d+)`, 
   loadUser('id'),
   authorize(ABILITIES.USER_VIEW),
   function (req, res, next) {
@@ -29,7 +29,7 @@ router.get(
 
 // POST update profile
 router.post(
-  '/:id(\\d+)',
+  String.raw`/:id(\d+)`,
   loadUser('id'),
   authorize(ABILITIES.USER_EDIT),
   function (req, res, next) {
@@ -65,7 +65,7 @@ router.post(
   }
 );
 
-router.post('/:id(\\d+)/deactivate', loadUser('id'), authorize(ABILITIES.USER_DEACTIVATE), (req, res, next) => {
+router.post(String.raw`/:id(\d+)/deactivate`, loadUser('id'), authorize(ABILITIES.USER_DEACTIVATE), (req, res, next) => {
   try {
     const userToDeactivate = req.resource.user;
 
@@ -85,7 +85,7 @@ router.post('/:id(\\d+)/deactivate', loadUser('id'), authorize(ABILITIES.USER_DE
   }
 });
 
-router.post('/:id(\\d+)/activate', loadUser('id'), authorize(ABILITIES.USER_ACTIVATE), (req, res, next) => {
+router.post(String.raw`/:id(\d+)/activate`, loadUser('id'), authorize(ABILITIES.USER_ACTIVATE), (req, res, next) => {
   try {
     const userToActivate = req.resource.user;
 

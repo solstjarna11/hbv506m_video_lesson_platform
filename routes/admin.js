@@ -1,7 +1,7 @@
-var express = require("express");
-var router = express.Router();
-const { exec } = require("child_process");
-const fs = require("fs");
+const express = require("express");
+const router = express.Router();
+const { exec } = require("node:child_process");
+const fs = require("node:fs");
 
 const { accessLogPath, errorLogPath } = require("../utils/logging/fileStreams");
 const { badRequestError, notFoundError } = require("../utils/errors/httpErrors");
@@ -17,12 +17,12 @@ function sanitizeQueryString(value, maxLength = 100) {
 
   return value
     .trim()
-    .replace(/[\r\n\t]+/g, " ")
+    .replaceAll(/[\r\n\t]+/g, " ")
     .slice(0, maxLength);
 }
 
 function sanitizeQueryInt(value, fallback = null, min = 0, max = 1000) {
-  const parsed = parseInt(value, 10);
+  const parsed = Number.parseInt(value, 10);
 
   if (!Number.isFinite(parsed)) return fallback;
   if (parsed < min) return min;
@@ -132,7 +132,7 @@ router.get("/monitor", authorize(ABILITIES.ADMIN_PANEL), function (req, res, nex
 
 router.get("/user-search", authorize(ABILITIES.USER_LIST), function (req, res, next) {
   try {
-    const userId = parseInt(req.query.id, 10);
+    const userId = Number.parseInt(req.query.id, 10);
 
     if (!Number.isFinite(userId)) {
       return next(
