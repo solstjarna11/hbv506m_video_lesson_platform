@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const rfs = require('rotating-file-stream');
 
 const logsDir = process.env.LOG_DIR || path.join(__dirname, '..', '..', 'logs');

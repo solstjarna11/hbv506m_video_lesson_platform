@@ -32,14 +32,14 @@ function sanitizeString(value, maxLength = MAX_FIELD_LENGTH) {
   if (value == null) return null;
 
   const normalized = String(value)
-    .replace(/%(25)?0d/gi, ' ')
-    .replace(/%(25)?0a/gi, ' ')
-    .replace(/\\r/g, ' ')
-    .replace(/\\n/g, ' ')
-    .replace(/\\t/g, ' ')
-    .replace(/[\r\n\t]+/g, ' ')
-    .replace(/\0/g, '')
-    .replace(/\s{2,}/g, ' ')
+    .replaceAll(/%(25)?0d/gi, ' ')
+    .replaceAll(/%(25)?0a/gi, ' ')
+    .replaceAll(String.raw`\r`, ' ')
+    .replaceAll(String.raw`\n`, ' ')
+    .replaceAll(String.raw`\t`, ' ')
+    .replaceAll(/[\r\n\t]+/g, ' ')
+    .replaceAll('\0', '')
+    .replaceAll(/\s{2,}/g, ' ')
     .trim();
 
   if (normalized.length <= maxLength) {
