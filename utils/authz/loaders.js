@@ -10,7 +10,7 @@ const { badRequestError, notFoundError } = require('../errors/httpErrors');
 
 function loadCourse(param = 'id') {
   return function (req, res, next) {
-    const id = parseInt(req.params[param], 10);
+    const id = Number.parseInt(req.params[param], 10);
 
     if (!Number.isFinite(id)) {
       return next(
@@ -41,7 +41,7 @@ function loadCourse(param = 'id') {
 
 function loadLesson(param = 'id') {
   return function (req, res, next) {
-    const id = parseInt(req.params[param], 10);
+    const id = Number.parseInt(req.params[param], 10);
 
     if (!Number.isFinite(id)) {
       return next(
@@ -93,7 +93,7 @@ function loadEnrollmentFromCourse() {
 
 function loadCourseFromQuery(queryKey = 'course_id') {
   return function (req, res, next) {
-    const id = parseInt(req.query[queryKey], 10);
+    const id = Number.parseInt(req.query[queryKey], 10);
 
     if (!Number.isFinite(id)) {
       return next(
@@ -124,7 +124,7 @@ function loadCourseFromQuery(queryKey = 'course_id') {
 
 function loadCourseFromBody(bodyKey = 'course_id') {
   return function (req, res, next) {
-    const id = parseInt(req.body[bodyKey], 10);
+    const id = Number.parseInt(req.body[bodyKey], 10);
 
     if (!Number.isFinite(id)) {
       return next(
@@ -194,7 +194,7 @@ function loadCourseFromLessonResource() {
 
 function loadUser(param = 'id') {
   return function (req, res, next) {
-    const id = parseInt(req.params[param], 10);
+    const id = Number.parseInt(req.params[param], 10);
 
     if (!Number.isFinite(id)) {
       return next(
