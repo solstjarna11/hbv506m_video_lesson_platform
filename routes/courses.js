@@ -1,7 +1,7 @@
 // Routes for managing courses
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 // Authorization
 const { authorize } = require('../utils/authz/authorize');
@@ -51,7 +51,7 @@ router.get('/new',
 
 // GET /courses/:id(\\d+)/edit - show edit form
 // Must be before /:id(\\d+) route! 
-router.get('/:id(\\d+)/edit', 
+router.get(String.raw`/:id(\d+)/edit`, 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   authorize(ABILITIES.COURSE_EDIT), // only users with course:edit on this course can access
   function (req, res, next) {
@@ -76,7 +76,7 @@ router.get('/:id(\\d+)/edit',
 
 // GET /courses/:id(\\d+) - course detail page (with lessons). 
 // Must be after /new route!
-router.get('/:id(\\d+)', 
+router.get(String.raw`/:id(\d+)`, 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   loadEnrollmentFromCourse(),
   authorize(ABILITIES.COURSE_VIEW), // only users with course:view on this course can access  
@@ -141,7 +141,7 @@ router.post('/',
 
 
 // POST /courses/:id(\\d+) - update course
-router.post('/:id(\\d+)', 
+router.post(String.raw`/:id(\d+)`, 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   authorize(ABILITIES.COURSE_EDIT), // only users with course:edit on this course can access
   function (req, res, next) {
@@ -180,7 +180,7 @@ router.post('/:id(\\d+)',
 
 // POST /courses/:id(\\d+)/publish-toggle - publish/unpublish
 router.post(
-  '/:id(\\d+)/publish-toggle',
+  String.raw`/:id(\d+)/publish-toggle`,
   loadCourse('id'),
   authorize(ABILITIES.COURSE_PUBLISH),
   (req, res, next) => {
@@ -206,7 +206,7 @@ router.post(
 );
 
 // POST /courses/:id(\\d+)/delete - delete course
-router.post('/:id(\\d+)/delete', 
+router.post(String.raw`/:id(\d+)/delete`, 
   loadCourse('id'), // loads course into req.resource.course or 404 if not found
   authorize(ABILITIES.COURSE_DELETE), // only users with course:delete on this course can access
   function (req, res, next) {
@@ -235,7 +235,7 @@ router.post('/:id(\\d+)/delete',
 
 // POST /courses/:id(\\d+)/enroll
 router.post(
-  '/:id(\\d+)/enroll',
+  String.raw`/:id(\d+)/enroll`,
   loadCourse('id'),
   loadEnrollmentFromCourse(),
   authorize(ABILITIES.COURSE_ENROLL),
@@ -260,7 +260,7 @@ router.post(
 
 // POST /courses/:id(\\d+)/unenroll
 router.post(
-  '/:id(\\d+)/unenroll',
+  String.raw`/:id(\d+)/unenroll`,
   loadCourse('id'),
   loadEnrollmentFromCourse(),
   authorize(ABILITIES.COURSE_UNENROLL),
