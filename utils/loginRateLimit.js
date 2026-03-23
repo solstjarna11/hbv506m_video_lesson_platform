@@ -3,7 +3,7 @@ const { rateLimitHandler } = require("./logging/rateLimitHandler");
 
 module.exports = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 
@@ -16,7 +16,7 @@ module.exports = rateLimit({
     message: "Login rate limit exceeded",
     metadata: {
       windowMs: 15 * 60 * 1000,
-      maxAttempts: 10,
+      maxAttempts: 100,
       flow: "login",
     },
     view: "auth/login",

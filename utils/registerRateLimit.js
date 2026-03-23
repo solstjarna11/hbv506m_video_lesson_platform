@@ -3,7 +3,7 @@ const { rateLimitHandler } = require("./logging/rateLimitHandler");
 
 module.exports = rateLimit({
   windowMs: 60 * 60 * 1000, // rate limit lasts for 1 hour
-  max: 5, // max 5 registrations per IP per hour
+  max: 100, // max 5 registrations per IP per hour
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many attempts. Please try again later.",
@@ -12,7 +12,7 @@ module.exports = rateLimit({
     message: "Registration rate limit exceeded",
     metadata: {
       windowMs: 60 * 60 * 1000,
-      maxAttempts: 5,
+      maxAttempts: 100,
       flow: "register",
     },
     view: "auth/register",
